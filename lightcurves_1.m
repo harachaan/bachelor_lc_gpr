@@ -75,8 +75,8 @@ u_sun = [0
          0
          1];
 u_obs = [0
-         0
-         1]; % 太陽と観測者同じでいいの？ 
+         1 / sqrt(2)
+         1 / sqrt(2)]; % 太陽と観測者同じでいいの？ 
     
 shape = [1.0 1.0];
     a = shape(1, 1); b = shape(1, 2);
@@ -85,16 +85,20 @@ C_sun = 455; % W/m^2
 %----------------------------------------------
 A = a * b;
 u_h = (u_sun + u_obs); u_h = u_h ./ norm(u_h);
+% phi_h = atan(u_h(2, 1) / u_h(1, 1));
 k_1 = sqrt((n_u+1) * (n_v+1)) / (8*pi);
 k_2 = (28*rho / 23*pi) * (1 - s*F_o);
-% z = (n_u*dot(u_h, u_u)^2 + n_v*dot(u_h, u_v)^2) / (1 - dot(u_h, u_n)^2);
+% zは２つの表し方があって，こっちだと分子と分母が０になってNaNになっちゃうからもう一つの方に変更
+% しようと思ったけど，そもそも幾何学的に特異点になりそうだから，どっちでも良さそう．
+z = (n_u*dot(u_h, u_u)^2 + n_v*dot(u_h, u_v)^2) / (1 - dot(u_h, u_n)^2);
+% z = n_u * cos(phi_h)^2 + n_v * sin(phi_h)^2;
 F_reflect = s*F_o + (1 - s*F_o)*(1 - dot(u_sun, u_h))^5;
 
 % Ashikhmin-shirley Model
 R_s = k_1 * dot(u_h, u_n)^z / (dot(u_sun, u_h) ...
-    * max([dot(u_obs, u_n) dot(u_sun, u_n)])) * F_reflect
+    * max([dot(u_obs, u_n) dot(u_sun, u_n)])) * F_reflect;
 R_d = k_2 * (1 - (1 - dot(u_obs, u_n)/2)^5) ...
-    * (1 - (1 - dot(u_sun, u_n)/2)^5)
+    * (1 - (1 - dot(u_sun, u_n)/2)^5);
 f_r = s*R_s + d*R_d; % f_r(theta, phi)
 % F_r = integral2(f_r, )
 
@@ -102,6 +106,6 @@ F_sun = C_sun * f_r * dot(u_sun, u_n);
 
 F_obs = (F_sun * A * dot(u_obs, u_n)) / (h_t^2);
 
-m_app = -26.7 - 2.5 * log10(F_obs / C_sun)
+m_app = -26.7 - 2.5 * log10(F_obs / C_sun);
 
 
