@@ -1,4 +1,6 @@
-% light_curvesの時間履歴を出力したい
+% light_curvesの時間履歴を出力したいけど，
+% とりあえずパラメータ全部適当に決めて点のスカラー量を出した
+
 
 % 必要なパラメータ--------------------------
 % BRDF f_r
@@ -58,6 +60,7 @@ surface_reflction = [1000 1000];
 
 h_t = 600*10^3; % m
 
+% 物体固定座標系単位ベクトル
 u_u = [1
        0
        0];
@@ -67,12 +70,13 @@ u_v = [0
 u_n = [0
        0
        1];
+
 u_sun = [0
          1/sqrt(2)
-         1/s];
+         1/sqrt(2)];
 u_obs = [0
          0
-         1]; % 太陽と観測者同じでいいの？
+         1]; % 太陽と観測者同じでいいの？ 
     
 shape = [1.0 1.0];
     a = shape(1, 1); b = shape(1, 2);
@@ -84,9 +88,9 @@ u_h = (u_sun + u_obs); u_h = u_h ./ norm(u_h);
 k_1 = sqrt((n_u+1) * (n_v+1)) / (8*pi);
 k_2 = (28*rho / 23*pi) * (1 - s*F_o);
 z = (n_u*dot(u_h, u_u)^2 + n_v*dot(u_h, u_v)^2) / (1 - dot(u_h, u_n)^2);
-F_reflect = s*F_o + (1 - s*F_o)*(1 - dot(u_sun, u_n)/2)^5;
-% Ashikhmin-shirley Model
+F_reflect = s*F_o + (1 - s*F_o)*(1 - dot(u_sun, u_h))^5;
 
+% Ashikhmin-shirley Model
 R_s = k_1 * dot(u_h, u_n)^z / (dot(u_sun, u_h) ...
     * max([dot(u_obs, u_n) dot(u_sun, u_n)])) * F_reflect;
 R_d = k_2 * (1 - (1 - dot(u_obs, u_n)/2)^5) ...
