@@ -24,11 +24,11 @@ v = [v1
      v3];
 
 % 角運動量(機体固定座標系)
-hb = J * w;
+h_b = J * w;
 
 % euler's equation 
-dydt(1:3, 1) = inv(J) * (tau - cross(w, hb));
-
+% dydt(1:3, 1) = inv(J) * (tau - cross(w, hb)); % 下の方が計算の効率がいいらしい？
+dydt(1:3, 1) = J \ (tau - cross(w, h_b)); 
 % quaternions' kinematics
 w_q = [w
        0]; % 便宜上，quaternionsに合わせて4行ベクトルにした

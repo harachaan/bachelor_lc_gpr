@@ -55,10 +55,11 @@ s = 0.7;
 d = 1-s;
 F_o = 0.3;
 rho = 0.3;
-surface_reflction = [1000 1000];
-    n_u = surface_reflction(1, 1); n_v = surface_reflction(1, 2);
+surface_reflection = [1000 1000];
+    n_u = surface_reflection(1, 1); n_v = surface_reflection(1, 2);
 
-h_t = 600*10^3; % m
+r_earth = 6378.14;
+h_t = 600 ; % km
 
 % 物体固定座標系単位ベクトル
 u_u = [1
@@ -106,6 +107,6 @@ F_sun = C_sun * f_r * dot(u_sun, u_n);
 
 F_obs = (F_sun * A * dot(u_obs, u_n)) / (h_t^2);
 
-m_app = -26.7 - 2.5 * log10(F_obs / C_sun);
+m_app = -26.7 - 2.5 * log10(abs(F_obs / C_sun))
 
 
