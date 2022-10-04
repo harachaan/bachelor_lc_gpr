@@ -1,5 +1,5 @@
 function m_app = lightcurves(u_sun, u_obs, s, d, rho, ...
-    F_o, surface_reflection, A, C_sun, u, altitude)
+    F_o, surface_reflection, A, C_sun, u, h_t)
 
 % calculation for the magnitude of lightcurves
 
@@ -24,7 +24,7 @@ R_d = k2 * (1 - (1 - dot(u_obs, u_n)/2)^5)...
 f_r = s*R_s + d*R_d;
 % LightCurves model
 F_sun = C_sun * f_r * dot(u_sun, u_n);
-F_obs = (F_sun * A * dot(u_obs, u_n)) / (altitude^2);
+F_obs = (F_sun * A * dot(u_obs, u_n)) / (h_t^2);
 % 宇宙機の等級
 % F_obs / C_sun
 m_app = -26.7 - 2.5 * log10(abs(F_obs / C_sun)); % -26.7: 太陽光の見かけの等級

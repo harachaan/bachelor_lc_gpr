@@ -164,8 +164,17 @@ u = [u_u u_v u_n];
 % u_sun_i = rand(3,1); u_sun_i = u_sun_i ./ norm(u_sun_i)
 u_sun_i = [10 10 0]'; u_sun_i = u_sun_i ./ norm(u_sun_i); % IJK系のXY平面上においた
 % 観測者方向ベクトル(慣性系)
+% obs_vector = rand(3,1); obs_vector = obs_vector ./ norm(obs_vector);
+% obs_vector = r_earth * obs_vector;
+% SC_vector = rand(3,1); SC_vector = SC_vector ./ norm(SC_vector); % SC:Space Craft
+% SC_vector = (r_earth + altitude) * SC_vector;
+SC_vector = [3.8017 4.0097 4.2618]' * 1.0e+06;
+obs_vector = [4.9188 4.0590 0.1029]' .* 1.0e+06;
+u_obs_i = obs_vector - SC_vector;
+h_t = norm(u_obs_i); % 観測者から見た宇宙機の相対位置ベクトルの大きさ
+u_obs_i = u_obs_i ./ h_t;
 % u_obs_i = rand(3,1); u_obs_i = u_obs_i ./ norm(u_obs_i);
-u_obs_i = [0.7150 0.3636 0.5978]';
+% u_obs_i = [0.7150 0.3636 0.5978]';
 % それぞれ機体固定座標系へ変換
 u_sun_i_hist = zeros(3, length(q)); % 事前割り当て
 u_obs_i_hist = zeros(3, length(q));
@@ -235,7 +244,7 @@ u_obs = transform_i_to_b(q, q_inv, u_obs_i_hist);
 m_app = zeros(1, length(q));
 for i = 1:1:length(q)
     m_app(1,i) = lightcurves(u_sun(:,i), u_obs(:,i), s, d, rho, ...
-        F_o, surface_reflection, A, C_sun, u, altitude);
+        F_o, surface_reflection, A, C_sun, u, h_t);
 end    
 
 
