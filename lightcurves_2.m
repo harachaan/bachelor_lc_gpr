@@ -12,7 +12,7 @@ close all
 % for attitude, orbit
 
 % time span 
-t0 = 0; tf = 3600*2; % sec
+t0 = 0; tf = 3600*2; % sec;
     tspan = [t0 tf];
 
 % 形状パラメータ（平板:密度m一定）
@@ -27,14 +27,14 @@ m = 1.0; % [kg/m^2]
                    0 0 a^2+b^2];
 
 % 軌道パラメータ
-r_earth = 6378.14; % [km]
-altitude = 600; %[km]
-mu = 398600.5; % 地心重力定数[km^3/s^2]
+r_earth = 6378.14 * 10^3; % [m]
+altitude = 600 * 10^3; %[km]
+mu = 398600.5 * 10^9; % 地心重力定数[m^3/s^2]
 
 % 太陽の半径
 % r_sun 
 % 地球と太陽の距離
-distance_sun_earth = 14960 * 10^4; % [km]
+distance_sun_earth = 14960 * 10^4 * 10^3; % [m]
 
 
 % 初期条件
@@ -46,17 +46,17 @@ q0 = [0
     q0 = q0 / norm(q0); % 正規化
 
 % 角速度(機体固定?) [rad/s]
-w0 = [pi/36
+w0 = [pi/3600
       0
       0];
 
 % 軌道位置[km]，速度[km/s](cowell's formulation)
 r0 = [5492.00034
       3984.00140
-      2.95881]; 
+      2.95881] .* 10^3; 
 v0 = [-3.931046491
       5.498676921
-      3.665980697]; % from いそべさん
+      3.665980697] .* 10^3; % from いそべさん
 % r0 = rand(3,1); r0 = r0 ./ norm(r0);
 % r0 = r0 * (r_earth + altitude);
 % v0 = rand(3,1) .* 10;
@@ -158,10 +158,11 @@ u_v = [0
        0];
 u_n = [0
        0
-       1];
+       1]; 
+u = [u_u u_v u_n];
 % 太陽光方向単位ベクトル(慣性系)
-% u_sun_i = rand(3,1); u_sun_i = u_sun_i ./ norm(u_sun_i):
-u_sun_i = [0.7004 0.1144 0.7045]';
+% u_sun_i = rand(3,1); u_sun_i = u_sun_i ./ norm(u_sun_i)
+u_sun_i = [10 10 0]'; u_sun_i = u_sun_i ./ norm(u_sun_i); % IJK系のXY平面上においた
 % 観測者方向ベクトル(慣性系)
 % u_obs_i = rand(3,1); u_obs_i = u_obs_i ./ norm(u_obs_i);
 u_obs_i = [0.7150 0.3636 0.5978]';
@@ -172,40 +173,70 @@ for i = 1:1:length(q)
     u_sun_i_hist(:,i) = u_sun_i;
     u_obs_i_hist(:,i) = u_obs_i;
 end
-u_sun_b = transform_i_to_b(q, q_inv, u_sun_i_hist);
-u_obs_b = transform_i_to_b(q, q_inv, u_obs_i_hist);
+u_sun = transform_i_to_b(q, q_inv, u_sun_i_hist);
+u_obs = transform_i_to_b(q, q_inv, u_obs_i_hist);
 
-u_sun = [0
-         0
-         1];
-u_obs = [0
-         1 / sqrt(2)
-         1 / sqrt(2)]; % 太陽と観測者同じでいいの？
+% u_sun = [0
+%          0
+%          1];
+% u_obs = [0
+%          1 / sqrt(2)
+%          1 / sqrt(2)]; % 太陽と観測者同じでいいの？
 %--------------------------------------------------------------------------
 % calculation for the magnitude of lightcurves
 
-% 太陽光ベクトルと観測者ベクトルの二等分ベクトル
-u_h = (u_sun + u_obs); u_h = u_h ./ norm(u_h);
-% Rs, Rdを求めるのに必要な定数たち
-k1 = sqrt((n_u + 1) * (n_v + 1) / (8 * pi));
-k2 = (28*rho / 23*pi) * (1 - s*F_o);
-z = (n_u*dot(u_h, u_u)^2 + n_v*dot(u_h, u_v)^2) / (1 - dot(u_h, u_n)^2);
-% フレネル係数
-F_reflect = s*F_o + (1 - s*F_o)*(1 - dot(u_sun, u_h))^5;
-% Ashikhmin-shirley Model
-R_s = k1 * dot(u_h, u_n)^z / (dot(u_sun, u_h)...
-    * max([dot(u_obs, u_n) dot(u_sun, u_n)])) * F_reflect;
-R_d = k2 * (1 - (1 - dot(u_obs, u_n)/2)^5)...
-    * (1 - (1 - dot(u_sun, u_n)/2)^5);
-% BRDF
-f_r = s*R_s + d*R_d;
-% LightCurves model
-F_sun = C_sun * f_r * dot(u_sun, u_n);
-F_obs = (F_sun * A * dot(u_obs, u_n)) / (altitude^2);
-% 宇宙機の等級
-% F_obs / C_sun
-m_app = -26.7 - 2.5 * log10(abs(F_obs / C_sun)) % -26.7: 太陽光の見かけの等級
+% % 太陽光ベクトルと観測者ベクトルの二等分ベクトル
+% u_h = (u_sun + u_obs); u_h = u_h ./ norm(u_h);
+% % Rs, Rdを求めるのに必要な定数たち
+% k1 = sqrt((n_u + 1) * (n_v + 1) / (8 * pi));
+% k2 = (28*rho / 23*pi) * (1 - s*F_o);
+% z = (n_u*dot(u_h, u_u)^2 + n_v*dot(u_h, u_v)^2) / (1 - dot(u_h, u_n)^2);
+% % フレネル係数
+% F_reflect = s*F_o + (1 - s*F_o)*(1 - dot(u_sun, u_h))^5;
+% % Ashikhmin-shirley Model
+% R_s = k1 * dot(u_h, u_n)^z / (dot(u_sun, u_h)...
+%     * max([dot(u_obs, u_n) dot(u_sun, u_n)])) * F_reflect;
+% R_d = k2 * (1 - (1 - dot(u_obs, u_n)/2)^5)...
+%     * (1 - (1 - dot(u_sun, u_n)/2)^5);
+% % BRDF
+% f_r = s*R_s + d*R_d;
+% % LightCurves model
+% F_sun = C_sun * f_r * dot(u_sun, u_n);
+% F_obs = (F_sun * A * dot(u_obs, u_n)) / (altitude^2);
+% % 宇宙機の等級
+% % F_obs / C_sun
+% m_app = -26.7 - 2.5 * log10(abs(F_obs / C_sun)) % -26.7: 太陽光の見かけの等級
 
+% u_sun, u_obsに姿勢運動による時間履歴を反映させてmagnitudeを求める
+% u_h = zeros(3, length(q)); % 事前割り当て
+% m_app = zeros(1, length(q));
+% for i = 1:1:length(q)
+%     u_h(:,i) = u_sun_b(:,i) + u_obs_b(:,i);
+%     u_h(:,i) = u_h(:,i) ./ norm(u_h(:,i));
+%     k1 = sqrt(n_u + 1) * (n_v + 1) / (8 * pi);
+%     k2 = (28*rho / 23*pi) * (1 - s*F_o);
+%     z = (n_u*dot(u_h(:,i), u_u)^2 + n_v*dot(u_h(:,i), u_v)^2) ...
+%         / (1 - dot(u_h(:,i), u_n)^2);
+%     F_reflect = s*F_o + (1 - s*F_o)*(1 - dot(u_sun_b(:,i), u_h(:,i)))^5;
+%     R_s = k1 * dot(u_h(:,i), u_n)^z / (dot(u_sun_b(:,i), u_h(:,i))...
+%         *max([dot(u_obs_b(:,i), u_n), dot(u_sun_b(:,i), u_n)])) * F_reflect;
+%     R_d = k2 * (1 - (1 - dot(u_obs_b(:,i), u_n)/2)^5)...
+%     * (1 - (1 - dot(u_sun_b(:,i), u_n)/2)^5);
+%     % BRDF
+%     f_r = s*R_s + d*R_d;
+%     % LightCurves model
+%     F_sun = C_sun * f_r * dot(u_sun_b(:,i), u_n);
+%     F_obs = (F_sun * A * dot(u_obs_b(:,i), u_n)) / (altitude^2);
+%     % 宇宙機の等級
+%     m_app(:,i) = -26.7 - 2.5 * log10(abs(F_obs / C_sun)) % -26.7: 太陽光の見かけの等級
+% end
+
+% LightCurvesの計算の関数化
+m_app = zeros(1, length(q));
+for i = 1:1:length(q)
+    m_app(1,i) = lightcurves(u_sun(:,i), u_obs(:,i), s, d, rho, ...
+        F_o, surface_reflection, A, C_sun, u, altitude);
+end    
 
 
 %--------------------------------------------------------------------------
@@ -222,7 +253,9 @@ m_app = -26.7 - 2.5 * log10(abs(F_obs / C_sun)) % -26.7: 太陽光の見かけ�
 % figure(f2);
 % plot(t, h_i_abs, '-r')
 % title('角運動量ベクトル(系)の大きさ')
-
+f3 = figure;
+figure(f3);
+plot(t, m_app, '-b')
 
 
 
