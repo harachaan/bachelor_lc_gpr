@@ -171,7 +171,7 @@ u_sun_i = [10 10 0]'; u_sun_i = u_sun_i ./ norm(u_sun_i); % IJK系のXY平面上
 SC_vector = [3.8017 4.0097 4.2618]' * 1.0e+06;
 obs_vector = [4.9188 4.0590 0.1029]' .* 1.0e+06;
 u_obs_i = obs_vector - SC_vector;
-h_t = norm(u_obs_i); % 観測者から見た宇宙機の相対位置ベクトルの大きさ
+h_t = norm(u_obs_i); % 観測者から見た宇宙機の相対位置ベクトルの大
 u_obs_i = u_obs_i ./ h_t;
 % u_obs_i = rand(3,1); u_obs_i = u_obs_i ./ norm(u_obs_i);
 % u_obs_i = [0.7150 0.3636 0.5978]';
