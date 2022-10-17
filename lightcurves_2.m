@@ -50,7 +50,7 @@ w0 = [pi/3600
       0
       0];
 
-% 軌道位置[km]，速度[km/s](cowell's formulation)
+% 軌道位置[km]，速度[km/s](cowell's formulation)IJK系
 r0 = [5492.00034
       3984.00140
       2.95881] .* 10^3; 
@@ -264,7 +264,8 @@ end
 % title('角運動量ベクトル(系)の大きさ')
 f3 = figure;
 figure(f3);
-plot(t, m_app, '-b')
-
+plot(t, m_app, '-b');
+title('LightCurves');
+xlabel('t'); ylabel('magnitude');
 
 
