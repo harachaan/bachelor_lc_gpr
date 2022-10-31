@@ -5,7 +5,7 @@
 clc
 clear 
 close all
-
+addpath('functions')
 
 % 手入力パラメータたち
 %--------------------------------------------------------------------------
@@ -50,7 +50,7 @@ w0 = [pi/3600
       0
       0];
 
-% 軌道位置[km]，速度[km/s](cowell's formulation)
+% 軌道位置[km]，速度[km/s](cowell's formulation)IJK系
 r0 = [5492.00034
       3984.00140
       2.95881] .* 10^3; 
@@ -170,7 +170,9 @@ u_sun_i = [10 10 0]'; u_sun_i = u_sun_i ./ norm(u_sun_i); % IJK系のXY平面上
 % SC_vector = (r_earth + altitude) * SC_vector;
 SC_vector = [3.8017 4.0097 4.2618]' * 1.0e+06;
 obs_vector = [4.9188 4.0590 0.1029]' .* 1.0e+06;
-u_obs_i = obs_vector - SC_vector; u_obs_i = u_obs_i ./ 
+u_obs_i = obs_vector - SC_vector;
+h_t = norm(u_obs_i); % 観測者から見た宇宙機の相対位置ベクトルの大
+u_obs_i = u_obs_i ./ h_t;
 % u_obs_i = rand(3,1); u_obs_i = u_obs_i ./ norm(u_obs_i);
 % u_obs_i = [0.7150 0.3636 0.5978]';
 % それぞれ機体固定座標系へ変換
@@ -242,7 +244,7 @@ u_obs = transform_i_to_b(q, q_inv, u_obs_i_hist);
 m_app = zeros(1, length(q));
 for i = 1:1:length(q)
     m_app(1,i) = lightcurves(u_sun(:,i), u_obs(:,i), s, d, rho, ...
-        F_o, surface_reflection, A, C_sun, u, altitude);
+        F_o, surface_reflection, A, C_sun, u, h_t);
 end    
 
 
@@ -262,7 +264,8 @@ end
 % title('角運動量ベクトル(系)の大きさ')
 f3 = figure;
 figure(f3);
-plot(t, m_app, '-b')
-
+plot(t, m_app, '-b');
+title('LightCurves');
+xlabel('t'); ylabel('magnitude');
 
 
