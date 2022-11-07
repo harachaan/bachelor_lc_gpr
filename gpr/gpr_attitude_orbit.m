@@ -2,7 +2,8 @@
 clc
 clear
 close all
-
+dir
+addpath('')
 % kernel parameters
 tau = log(1);
 sigma = log(1);
