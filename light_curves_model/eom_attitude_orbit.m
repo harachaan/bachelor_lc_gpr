@@ -1,7 +1,7 @@
 % 姿勢，角速度，軌道位置・速度を求める常微分方程式のfunction
 function dydt = eom_attitude_orbit(t, y, J, mu)
 
-% トルク
+% トルク [N・m]
 tau = [0
        0
        0];
