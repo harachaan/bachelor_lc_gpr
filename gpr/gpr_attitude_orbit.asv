@@ -17,7 +17,7 @@ sample = readmatrix('simple_plate_0.csv', NumHeaderLines=1);
 data = zeros(length(sample(:,1)), length(sample(1, :)), 11); % 事前割り当て
 for i = 0:1:10
     filename = strcat('simple_plate_', num2str(i), '.csv');
-    data(:,:,i+1) = readmatrix(filename, NumHeaderLines=1);
+    data(:,:,i) = readmatrix(filename, NumHeaderLines=1);
 end
 
 
