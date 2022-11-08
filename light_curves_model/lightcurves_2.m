@@ -269,8 +269,8 @@ title('LightCurves');
 xlabel('t'); ylabel('magnitude');
 
 % csvファイルに姿勢，軌道データの書き込み
-data = array2table([q' r_cowell']);
-data.Properties.VariableNames(1:7) = {'q0', 'q1', 'q2', 'q3', 'x_cowell', 'y_cowell', 'z_cowell'};
-writetable(data, 'attitude_orbit_data/simple_plate/simple_plate.csv');
-
+data = array2table([t q' r_cowell']);
+data.Properties.VariableNames(1:8) = {'t', 'q0', 'q1', 'q2', 'q3', 'x_cowell', 'y_cowell', 'z_cowell'};
+writetable(data, 'attitude_orbit_data/simple_plate.csv');
+writetable(data, '../gpr/simple_plate/simple_plate_0.csv');
 
