@@ -17,15 +17,35 @@ sample = readmatrix('simple_plate_0.csv', NumHeaderLines=1);
 data = zeros(length(sample(:,1)), length(sample(1, :)), 11); % 事前割り当て
 for i = 0:1:10
     filename = strcat('simple_plate_', num2str(i), '.csv');
-    data(:,:,i) = readmatrix(filename, NumHeaderLines=1);
+    data(:,:,i+1) = readmatrix(filename, NumHeaderLines=1);
 end
+t = data(:,1,:); 
+q0 = data(:,2,:); q1 = data(:,3,:); q2 = data(:,4,:); q3
+
+% 確め計算ゾーン ------------------------------------------------------------
+
+% -------------------------------------------------------------------------
+
+% カーネル行列のハイパーパラメータ推定
+% params = optimize1(params, xtrain, ytrain);
+
+% 回帰の計算
+
+
+% plot
+f1 = figure; % f2 = figure;
+
+figure(f1);
+plot()
 
 
 
-
-
-
-
+% -------------------------------------------------------------------------
+% 図をプロットする関数を作ろうとしたけどよくわからん買った．
+% function fig = plot_drawline(f_num, xtrain, ytrain, xx, y)
+%     fig = figure;
+%     figure(f_num); 
+% end
 
 
 
