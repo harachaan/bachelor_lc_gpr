@@ -20,8 +20,8 @@ for i = 0:1:10
     data(:,:,i+1) = readmatrix(filename, NumHeaderLines=1);
 end
 t = data(:,1,:); 
-q0 = data(:,2,:); q1 = data(:,3,:); q2 = data(:,4,:); q3 = data(:,5,:);
-x_cowell = data(:,6,:); y_cowell = data(:,7,:); z_cowell = data(:,8,:);
+q0_train = data(:,2,:); q1_train = data(:,3,:); q2_train = data(:,4,:); q3_train = data(:,5,:);
+x_cowell_train = data(:,6,:); y_cowell_train = data(:,7,:); z_cowell_train = data(:,8,:);
 
 % 確め計算ゾーン ------------------------------------------------------------
 
@@ -61,7 +61,24 @@ title("q3");
 
 % ガウスカーネル
 function kernel = gaussian_kernel(x, y, params, train)
+    arguments
+        x; y; params; train = true;
+    end
+    tau = params(1,1); sigma = params(1,2); eta = params(1,3);
+    % 無名関数
+    kgauss = @(x, y) exp(tau) * exp(-(x - y)^2 / (exp(sigma)));
+    if train == true && x == y
+        kernel = kgauss(x, y) + exp(eta);
+    else
+        kernel = kgauss(x, y);
+    end
+end
 
+% ハイパーパラメータに対する，式(3.92)の勾配
+function kgrad = kgauss_grad(xi, xj, d, params)
+    if d == 1
+        kgrad = gaussian
+    end
 end
 
 
