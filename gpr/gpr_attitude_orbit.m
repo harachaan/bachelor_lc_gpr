@@ -34,13 +34,22 @@ x_cowell = data(:,6,:); y_cowell = data(:,7,:); z_cowell = data(:,8,:);
 
 
 % plot
-f1 = figure; % f2 = figure;
+f1 = figure; f2 = figure;
 
 figure(f1);
 for i = 1:1:length(t(1,1,:))
     plot(t(:,:,i), q0(:,:,i), 'ko');
     hold on;
 end
+title("q0");
+
+figure(f2);
+for i = 1:1:length(t(1,1,:))
+    plot(t(:,:,i), q3(:,:,i), 'bo');
+    hold on;
+end
+title("q3");
+
 
 
 % -------------------------------------------------------------------------
@@ -50,6 +59,10 @@ end
 %     figure(f_num); 
 % end
 
+% ガウスカーネル
+function kernel = gaussian_kernel(x, y, params, train)
+
+end
 
 
 
