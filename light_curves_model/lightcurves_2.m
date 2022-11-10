@@ -182,6 +182,8 @@ for i = 1:1:length(q)
     u_sun_i_hist(:,i) = u_sun_i;
     u_obs_i_hist(:,i) = u_obs_i;
 end
+% このクォータニオンによる座標系変換じゃ姿勢しか考慮できてない？
+% cowellの座標も考慮に入れないと，
 u_sun = transform_i_to_b(q, q_inv, u_sun_i_hist);
 u_obs = transform_i_to_b(q, q_inv, u_obs_i_hist);
 
