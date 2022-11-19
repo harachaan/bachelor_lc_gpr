@@ -28,7 +28,7 @@ m = 1e-3; % [kg/m^2]
 
 % 軌道パラメータ
 r_earth = 6378.14 * 10^3; % [m]
-altitude = 600 * 10^3; %[km]
+altitude = 36000 * 10^3; %[km] 静止軌道
 mu = 398600.5 * 10^9; % 地心重力定数[m^3/s^2]
 
 % 太陽の半径
@@ -168,7 +168,7 @@ u_sun_i = [10 10 0]'; u_sun_i = u_sun_i ./ norm(u_sun_i); % IJK系のXY平面上
 % obs_vector = r_earth * obs_vector;
 % SC_vector = rand(3,1); SC_vector = SC_vector ./ norm(SC_vector); % SC:Space Craft
 % SC_vector = (r_earth + altitude) * SC_vector;
-SC_vector = [3.8017 4.0097 4.2618]' * 1.0e+06;
+SC_vector = [3.8017 4.0097 4.2618]' * 1.0e+06 * altitude / 600;
 obs_vector = [4.9188 4.0590 0.1029]' .* 1.0e+06;
 u_obs_i = obs_vector - SC_vector;
 h_t = norm(u_obs_i); % 観測者から見た宇宙機の相対位置ベクトルの大

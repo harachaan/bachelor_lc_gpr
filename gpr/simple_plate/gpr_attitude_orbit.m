@@ -3,7 +3,7 @@ clc
 clear
 close all
 dir = pwd;
-addpath(strcat(dir, '/simple_plate'))
+addpath(strcat(dir, '/try_to_make_samples_using_randn'))
 
 % kernel parameters
 tau = log(1);
