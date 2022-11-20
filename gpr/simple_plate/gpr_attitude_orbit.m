@@ -86,7 +86,7 @@ function kv = kv(x, xtrain, params)
     end
 end
 
-% ハイパーパラメータに対する，式(3.92)の勾配
+% ハイパーパラメータに対する，式(3.92)の勾配
 function kgrad = kgauss_grad(xi, xj, d, params)
     if d == 1
         kgrad = gaussian_kernel(xi, xj, params, false);
