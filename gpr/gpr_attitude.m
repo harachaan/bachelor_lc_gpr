@@ -8,7 +8,7 @@ dir = pwd;
 % kernel parameters
 tau = log(1);
 sigma = log(1);
-eta = log(1);
+eta = log(0.1);
 params = [tau sigma eta];
 
 % 学習データ読み込み
@@ -17,11 +17,11 @@ D_p = readmatrix('train_data_using_yoshimulibrary/D_p001.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp001.csv');
 % 入力の学習データ
 xtrain = D_p(:,1:7);
-q0_train = D_p(:,1,:); q1_train = D_p(:,2,:); q2_train = D_p(:,3,:); q3_train = D_p(:,4,:);
+q1_train = D_p(:,1,:); q2_train = D_p(:,2,:); q3_train = D_p(:,3,:); q4_train = D_p(:,4,:);
 w1_train = D_p(:,5,:); w2_train = D_p(:,6,:); w3_train = D_p(:,7,:);
 % 出力の学習データ
 ytrain = D_p(:,8:14);
-delta_q0_train = D_p(:,1,:); delta_q1_train = D_p(:,2,:); delta_q2_train = D_p(:,3,:); delta_q3_train = D_p(:,4,:);
+delta_q1_train = D_p(:,1,:); delta_q2_train = D_p(:,2,:); delta_q3_train = D_p(:,3,:); delta_q4_train = D_p(:,4,:);
 delta_w1_train = D_p(:,5,:); delta_w2_train = D_p(:,6,:); delta_w3_train = D_p(:,7,:);
 
 t_train = t_mApp(1:(length(t_mApp) - 1), 1);
@@ -37,7 +37,7 @@ kv(xtrain(2,:), xtrain, params);
 % params = optimize1(params, xtrain, ytrain);
 
 % 回帰の計算
-testData = readmatrix('train_data_using_yoshimulibrary\D_p002.csv'); % テストデータの入力？
+testData = readmatrix('train_data_using_yoshimulibrary/D_p002.csv'); % テストデータの入力？
 xx = testData(:, 1:7);
 N = length(xx); % これがあってるかわからん
 yy_mu = zeros(N, length(xx(1,:))); yy_var = zeros(N, length(xx(1,:)));
@@ -53,39 +53,39 @@ f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
-plot(xtrain(:,1), ytrain(:,1), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,1), ytrain(:,1), 'k.', MarkerSize=10); % 学習データ
 hold on;
-plot(xx(:,1), testData(:,8), 'rx'); % 真値？
+plot(xx(:,1), testData(:,8), 'r.'); % 真値？
 hold on;
-plot(xx(:,1), yy_mu(:,1), 'bx', LineWidth=2); % 回帰結果？
-title("q0");
+plot(xx(:,1), yy_mu(:,1), 'b.', LineWidth=2); % 回帰結果？
+title("q1");
 
 figure(f2);
-plot(xtrain(:,2), ytrain(:,2), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,2), ytrain(:,2), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,2), testData(:,9), 'r.'); % 真値？
 hold on;
 plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
-title("q1");
+title("q2");
 
 figure(f3);
-plot(xtrain(:,3), ytrain(:,3), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,3), ytrain(:,3), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,3), testData(:,10), 'r.'); % 真値？
 hold on;
 plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
-title("q2");
+title("q3");
 
 figure(f4);
-plot(xtrain(:,4), ytrain(:,4), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,4), ytrain(:,4), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,4), testData(:,11), 'r.'); % 真値？
 hold on;
 plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
-title("q3");
+title("q4");
 
 figure(f5);
-plot(xtrain(:,5), ytrain(:,5), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,5), ytrain(:,5), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,5), testData(:,12), 'r.'); % 真値？
 hold on;
@@ -93,7 +93,7 @@ plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
 title("w1");
 
 figure(f6);
-plot(xtrain(:,6), ytrain(:,6), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,6), ytrain(:,6), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,6), testData(:,13), 'r.'); % 真値？
 hold on;
@@ -101,7 +101,7 @@ plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
 title("w2");
 
 figure(f7);
-plot(xtrain(:,7), ytrain(:,7), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,7), ytrain(:,7), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,7), testData(:,14), 'r.'); % 真値？
 hold on;
