@@ -47,9 +47,17 @@ for i = 1:1:length(ytrain(1,:))
 end
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 
+% 時系列順の姿勢履歴にorganize -----------------------------------------------
+attiIni = xx(1, 1:7);
+attiReg = zeros(N, length(xx(1,:)));
+attiReg(1,:) = attiIni;
+for i = 1:1:(N-1)
+    attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,:);
+end
+
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
-
+f8 = figure;
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
@@ -108,6 +116,11 @@ hold on;
 plot(xx(:,7), yy_mu(:,7), 'b.'); % 回帰結果？
 title("w3");
 
+figure(f8);
+plot(t_train, testData(:,1), 'r.');
+hold on;
+plot(t_train, attiReg(:,1), 'b.');
+hold on;
 % -------------------------------------------------------------------------
 
 
