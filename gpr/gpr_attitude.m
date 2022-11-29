@@ -48,11 +48,15 @@ end
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
+addpath('hara_functions/');
 attiIni = xx(1, 1:7);
 attiReg = zeros(N, length(xx(1,:)));
 attiReg(1,:) = attiIni;
 for i = 1:1:(N-1)
-    attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,:);
+    % quaternions
+    attiReg(i+1,1:4) = q_pro(yy_mu(i,1:4)', attiReg(i,1:4)')'; % 転置に注意
+    % anglar velocity
+    attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
 end
 
 % plot --------------------------------------------------------------------
