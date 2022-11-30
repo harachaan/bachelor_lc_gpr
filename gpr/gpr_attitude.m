@@ -17,11 +17,11 @@ D_p = readmatrix('train_data_using_yoshimulibrary/D_p001.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp001.csv');
 % 入力の学習データ
 xtrain = D_p(:,1:7);
-q0_train = D_p(:,1,:); q1_train = D_p(:,2,:); q2_train = D_p(:,3,:); q3_train = D_p(:,4,:);
+q1_train = D_p(:,1,:); q2_train = D_p(:,2,:); q3_train = D_p(:,3,:); q4_train = D_p(:,4,:);
 w1_train = D_p(:,5,:); w2_train = D_p(:,6,:); w3_train = D_p(:,7,:);
 % 出力の学習データ
 ytrain = D_p(:,8:14);
-delta_q0_train = D_p(:,1,:); delta_q1_train = D_p(:,2,:); delta_q2_train = D_p(:,3,:); delta_q3_train = D_p(:,4,:);
+delta_q1_train = D_p(:,1,:); delta_q2_train = D_p(:,2,:); delta_q3_train = D_p(:,3,:); delta_q4_train = D_p(:,4,:);
 delta_w1_train = D_p(:,5,:); delta_w2_train = D_p(:,6,:); delta_w3_train = D_p(:,7,:);
 
 t_train = t_mApp(1:(length(t_mApp) - 1), 1);
@@ -37,7 +37,9 @@ kv(xtrain(2,:), xtrain, params);
 % params = optimize1(params, xtrain, ytrain);
 
 % 回帰の計算
-testData = readmatrix('train_data_using_yoshimulibrary\D_p002.csv'); % テストデータの入力？
+testData = readmatrix('train_data_using_yoshimulibrary/D_p002.csv'); % テストデータの入力？
+ytest = readmatrix('train_data_using_yoshimulibrary/t_mApp002.csv');
+t_test = ytest(1:length(ytest) - 1, 1);
 xx = testData(:, 1:7);
 N = length(xx); % これがあってるかわからん
 yy_mu = zeros(N, length(xx(1,:))); yy_var = zeros(N, length(xx(1,:)));
@@ -45,47 +47,65 @@ for i = 1:1:length(ytrain(1,:))
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
 end
+% クォータニオンの制約を満たすようにしたい
+% とりあえず正規化              
+for i = 1:1:length(yy_mu)
+    yy_mu(i,1:4) = yy_mu(i,1:4) ./ norm(yy_mu(i,1:4));
+end
+
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
+
+% 時系列順の姿勢履歴にorganize -----------------------------------------------
+addpath('hara_functions/');
+attiIni = xx(1, 1:7);
+attiReg = zeros(N, length(xx(1,:)));
+attiReg(1,:) = attiIni;
+for i = 1:1:(N-1)
+    % quaternions
+    attiReg(i+1,1:4) = q_pro(yy_mu(i,1:4)', attiReg(i,1:4)')'; % 転置に注意
+    % anglar velocity
+    attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
+end
 
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
-
+f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
-plot(xtrain(:,1), ytrain(:,1), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,1), ytrain(:,1), 'k.', MarkerSize=10); % 学習データ
 hold on;
-plot(xx(:,1), testData(:,8), 'rx'); % 真値？
+plot(xx(:,1), testData(:,8), 'r.'); % 真値？
 hold on;
-plot(xx(:,1), yy_mu(:,1), 'bx', LineWidth=2); % 回帰結果？
-title("q0");
+plot(xx(:,1), yy_mu(:,1), 'b.', LineWidth=2); % 回帰結果？
+title("q1");
 
 figure(f2);
-plot(xtrain(:,2), ytrain(:,2), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,2), ytrain(:,2), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,2), testData(:,9), 'r.'); % 真値？
 hold on;
 plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
-title("q1");
+title("q2");
 
 figure(f3);
-plot(xtrain(:,3), ytrain(:,3), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,3), ytrain(:,3), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,3), testData(:,10), 'r.'); % 真値？
 hold on;
 plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
-title("q2");
+title("q3");
 
 figure(f4);
-plot(xtrain(:,4), ytrain(:,4), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,4), ytrain(:,4), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,4), testData(:,11), 'r.'); % 真値？
 hold on;
 plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
-title("q3");
+title("q4");
 
 figure(f5);
-plot(xtrain(:,5), ytrain(:,5), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,5), ytrain(:,5), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,5), testData(:,12), 'r.'); % 真値？
 hold on;
@@ -93,7 +113,7 @@ plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
 title("w1");
 
 figure(f6);
-plot(xtrain(:,6), ytrain(:,6), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,6), ytrain(:,6), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,6), testData(:,13), 'r.'); % 真値？
 hold on;
@@ -101,12 +121,75 @@ plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
 title("w2");
 
 figure(f7);
-plot(xtrain(:,7), ytrain(:,7), 'ko', MarkerSize=10); % 学習データ
+plot(xtrain(:,7), ytrain(:,7), 'k.', MarkerSize=10); % 学習データ
 hold on;
 plot(xx(:,7), testData(:,14), 'r.'); % 真値？
 hold on;
 plot(xx(:,7), yy_mu(:,7), 'b.'); % 回帰結果？
 title("w3");
+
+figure(f8);
+plot(t_test, D_p(:, 1), 'k');
+hold on;
+plot(t_test, testData(:,1), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,1), 'b.');
+hold on;
+title("q1 time history");
+
+figure(f9);
+plot(t_test, D_p(:, 2), 'k');
+hold on;
+plot(t_test, testData(:,2), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,2), 'b.');
+hold on;
+title("q2 time history");
+
+figure(f10);
+plot(t_test, D_p(:, 3), 'k');
+hold on;
+plot(t_test, testData(:,3), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,3), 'b.');
+hold on;
+title("q3 time history");
+
+figure(f11);
+plot(t_test, D_p(:, 4), 'k');
+hold on;
+plot(t_test, testData(:,4), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,4), 'b.');
+hold on;
+title("q4 time history");
+
+figure(f12);
+plot(t_test, D_p(:, 5), 'k');
+hold on;
+plot(t_test, testData(:,5), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,5), 'b.');
+hold on;
+title("w1 time history");
+
+figure(f13);
+plot(t_test, D_p(:, 6), 'k');
+hold on;
+plot(t_test, testData(:,6), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,6), 'b.');
+hold on;
+title("w2 time history");
+
+figure(f14);
+plot(t_test, D_p(:, 7), 'k');
+hold on;
+plot(t_test, testData(:,7), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,7), 'b.');
+hold on;
+title("w3 time history");
 
 % -------------------------------------------------------------------------
 
