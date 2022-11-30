@@ -8,7 +8,7 @@ dir = pwd;
 % kernel parameters
 tau = log(1);
 sigma = log(1);
-eta = log(0.1);
+eta = log(1);
 params = [tau sigma eta];
 
 % 学習データ読み込み
@@ -38,6 +38,8 @@ kv(xtrain(2,:), xtrain, params);
 
 % 回帰の計算
 testData = readmatrix('train_data_using_yoshimulibrary/D_p002.csv'); % テストデータの入力？
+ytest = readmatrix('train_data_using_yoshimulibrary/t_mApp002.csv');
+t_test = ytest(1:length(ytest) - 1, 1);
 xx = testData(:, 1:7);
 N = length(xx); % これがあってるかわからん
 yy_mu = zeros(N, length(xx(1,:))); yy_var = zeros(N, length(xx(1,:)));
@@ -45,6 +47,12 @@ for i = 1:1:length(ytrain(1,:))
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
 end
+% クォータニオンの制約を満たすようにしたい
+% とりあえず正規化              
+for i = 1:1:length(yy_mu)
+    yy_mu(i,1:4) = yy_mu(i,1:4) ./ norm(yy_mu(i,1:4));
+end
+
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
@@ -61,7 +69,7 @@ end
 
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
-f8 = figure;
+f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
@@ -121,10 +129,68 @@ plot(xx(:,7), yy_mu(:,7), 'b.'); % 回帰結果？
 title("w3");
 
 figure(f8);
-plot(t_train, testData(:,1), 'r.');
+plot(t_test, D_p(:, 1), 'k');
 hold on;
-plot(t_train, attiReg(:,1), 'b.');
+plot(t_test, testData(:,1), 'r.'); 
 hold on;
+plot(t_test, attiReg(:,1), 'b.');
+hold on;
+title("q1 time history");
+
+figure(f9);
+plot(t_test, D_p(:, 2), 'k');
+hold on;
+plot(t_test, testData(:,2), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,2), 'b.');
+hold on;
+title("q2 time history");
+
+figure(f10);
+plot(t_test, D_p(:, 3), 'k');
+hold on;
+plot(t_test, testData(:,3), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,3), 'b.');
+hold on;
+title("q3 time history");
+
+figure(f11);
+plot(t_test, D_p(:, 4), 'k');
+hold on;
+plot(t_test, testData(:,4), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,4), 'b.');
+hold on;
+title("q4 time history");
+
+figure(f12);
+plot(t_test, D_p(:, 5), 'k');
+hold on;
+plot(t_test, testData(:,5), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,5), 'b.');
+hold on;
+title("w1 time history");
+
+figure(f13);
+plot(t_test, D_p(:, 6), 'k');
+hold on;
+plot(t_test, testData(:,6), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,6), 'b.');
+hold on;
+title("w2 time history");
+
+figure(f14);
+plot(t_test, D_p(:, 7), 'k');
+hold on;
+plot(t_test, testData(:,7), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,7), 'b.');
+hold on;
+title("w3 time history");
+
 % -------------------------------------------------------------------------
 
 
