@@ -56,8 +56,6 @@ kv(xtrain(2,:), xtrain, params);
 % 回帰の計算
 Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
 t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
-% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
-% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
 t_test = t_mApp_test(1:length(t_mApp_test), 1);
 xx = [Dp_test(:, 1:7)];
 N = length(xx); % これがあってるかわからん
@@ -78,13 +76,13 @@ two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 addpath('hara_functions/');
 attiIni = xx(1, 1:7); mAppIni = t_mApp_test(1,2);
 attiReg = zeros(N, length(xx(1,:))); attiReg(1,:) = attiIni;
-attiReg_qe = zeros(N, 4); attiReg_qe(1,:) = q_pro(Dp_test(1,1:4)',attiReg(1,1:4)')'; % 誤差クォータニオンの初期値
+attiReg_qe = zeros(N, 4); attiReg_qe(1,:) = q_pro(Dp_test(),attiReg(1,1:4)')'; % 誤差クォータニオンの初期値
 mAppReg = zeros(N, 1); mAppReg(1,1) = mAppIni;
 for i = 1:1:(N-1)
     % quaternions
     attiReg(i+1,1:4) = q_pro(yy_mu(i,1:4)', attiReg(i,1:4)')'; % 転置に注意
     % 真値と回帰結果の誤差クォータニオンを取る．
-    attiReg_qe(i+1,1:4) = q_pro(Dp_test(i+1,1:4)', attiReg(i+1,1:4)')'; % 転置に注意
+    attiReg_qe(i+1,1:4) = q_pro(Dp_test(i+1,1:4)', attiReg(i+1,1:4)')';
     % anglar velocity
     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
     % Light Curves
@@ -155,47 +153,52 @@ plot(xx(:,7), yy_mu(:,7), 'b.'); % 回帰結果？
 title("w3");
 
 figure(f8);
-% plot(t_test, Dp_test(:,1), 'r.'); 
+% plot(t_test, Dp(:, 1), 'k');
 % hold on;
-% plot(t_test, attiReg(:,1), 'b.');
-% hold on;
-% 元々真値と回帰結果を同時にプロットしていたが，真値と回帰結果の誤差クォータニオンのプロットに変更
-plot(t_test, attiReg_qe(:,1), 'g.');
-filename = "q1errorTimeHistory"; savename = strcat("figures/", filename, ".png");
+plot(t_test, Dp_test(:,1), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,1), 'b.');
+hold on;
+filename = "q1TimeHistory"; savename = strcat("figures/", filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
 figure(f9);
-% plot(t_test, Dp_test(:,2), 'r.'); 
+% plot(t_test, Dp(:, 2), 'k');
 % hold on;
-% plot(t_test, attiReg(:,2), 'b.');
-% hold on;
-plot(t_test, attiReg_qe(:,2), 'g.');
-filename = "q2errorTimeHistory"; savename = strcat("figures/", filename, ".png");
+plot(t_test, Dp_test(:,2), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,2), 'b.');
+hold on;
+filename = "q2TimeHistory"; savename = strcat("figures/", filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
 figure(f10);
-% plot(t_test, Dp_test(:,3), 'r.'); 
+% plot(t_test, Dp(:, 3), 'k');
 % hold on;
-% plot(t_test, attiReg(:,3), 'b.');
-% hold on;
-plot(t_test, attiReg_qe(:,3), 'g.');
-filename = "q3errorTimeHistory"; savename = strcat("figures/", filename, ".png");
+plot(t_test, Dp_test(:,3), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,3), 'b.');
+hold on;
+filename = "q3TimeHistory"; savename = strcat("figures/", filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
 figure(f11);
-% plot(t_test, Dp_test(:,4), 'r.'); 
+% plot(t_test, Dp(:, 4), 'k');
 % hold on;
-% plot(t_test, attiReg(:,4), 'b.');
-% hold on;
-plot(t_test, attiReg_qe(:,4), 'g.');
-filename = "q4errorTimeHistory"; savename = strcat("figures/", filename, ".png");
+plot(t_test, Dp_test(:,4), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,4), 'b.');
+hold on;
+filename = "q4TimeHistory"; savename = strcat("figures/", filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
 figure(f12);
+% plot(t_test, Dp(:, 5), 'k');
+% hold on;
 plot(t_test, Dp_test(:,5), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
@@ -205,6 +208,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f13);
+% plot(t_test, Dp(:, 6), 'k');
+% hold on;
 plot(t_test, Dp_test(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
@@ -214,6 +219,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f14);
+% plot(t_test, Dp(:, 7), 'k');
+% hold on;
 plot(t_test, Dp_test(:,7), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,7), 'b.');
@@ -223,6 +230,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f15);
+% plot(t_test, t_mApp(:,2), 'k'); % 学習データ
+% hold on;
 plot(t_test, t_mApp_test(:,2), 'r.'); % 真値
 hold on;
 plot(t_test, mAppReg(:,1), 'b.'); % 回帰結果
