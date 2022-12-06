@@ -54,10 +54,10 @@ kv(xtrain(2,:), xtrain, params);
 % params = optimize1(params, xtrain, ytrain);
 
 % 回帰の計算
-Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
-% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
-% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
+% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
+% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
+Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
 t_test = t_mApp_test(1:length(t_mApp_test), 1);
 xx = [Dp_test(:, 1:7)];
 N = length(xx); % これがあってるかわからん
@@ -88,7 +88,7 @@ for i = 1:1:(N-1)
     % anglar velocity
     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
     % Light Curves
-    mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,1);
+    mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
 end
 
 
