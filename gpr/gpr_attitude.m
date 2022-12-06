@@ -16,30 +16,27 @@ params = [tau sigma eta];
 % (from yoshimulibrary...)
 Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate002.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-% for i = 3:1:5
-%     % flat plate の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-%     % box wing の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     Dp = [Dp; df]; 
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-% end
+for i = 3:1:5
+    % flat plate の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+    % box wing の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    Dp = [Dp; df]; 
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+end
 % 入力の学習データ
 xtrain = Dp(:,1:7);
-% q1_train = Dp(:,1,:); q2_train = Dp(:,2,:); q3_train = Dp(:,3,:); q4_train = Dp(:,4,:);
-% w1_train = Dp(:,5,:); w2_train = Dp(:,6,:); w3_train = Dp(:,7,:);
+
 % 出力の学習データ
-ytrain = [Dp(:,8:14), t_mApp(:,3)];
-% delta_q1_train = Dp(:,1,:); delta_q2_train = Dp(:,2,:); delta_q3_train = Dp(:,3,:); delta_q4_train = Dp(:,4,:);
-% delta_w1_train = Dp(:,5,:); delta_w2_train = Dp(:,6,:); delta_w3_train = Dp(:,7,:);
+ytrain = [Dp(:,8:14) t_mApp(:,3)]; ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0;
 
 t_train = t_mApp(1:(length(t_mApp)), 1);
 
@@ -54,14 +51,15 @@ kv(xtrain(2,:), xtrain, params);
 % params = optimize1(params, xtrain, ytrain);
 
 % 回帰の計算
-Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
-% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
-% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-t_test = t_mApp_test(1:length(t_mApp_test), 1);
+% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
+% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
+Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
+t_test = t_mApp_test(:, 1);
 xx = [Dp_test(:, 1:7)];
-N = length(xx); % これがあってるかわからん
-yy_mu = zeros(N, length(xx(1,:))); yy_var = zeros(N, length(xx(1,:)));
+N = length(xx); 
+yy_mu = zeros(N, length(ytrain(1,:))); yy_var = zeros(N, length(xx(1,:)));
+% a = gpr(xx, xtrain, ytrain(:,8), params);
 for i = 1:1:length(ytrain(1,:))
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
@@ -78,17 +76,17 @@ two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 addpath('hara_functions/');
 attiIni = xx(1, 1:7); mAppIni = t_mApp_test(1,2);
 attiReg = zeros(N, length(xx(1,:))); attiReg(1,:) = attiIni;
-attiReg_qe = zeros(N, 4); attiReg_qe(1,:) = q_pro(Dp_test(1,1:4)',attiReg(1,1:4)')'; % 誤差クォータニオンの初期値
+attiReg_qe = zeros(N, 4); attiReg_qe(1,:) = q_error(Dp_test(1,1:4)',attiReg(1,1:4)')'; % 誤差クォータニオンの初期値
 mAppReg = zeros(N, 1); mAppReg(1,1) = mAppIni;
 for i = 1:1:(N-1)
     % quaternions
     attiReg(i+1,1:4) = q_pro(yy_mu(i,1:4)', attiReg(i,1:4)')'; % 転置に注意
     % 真値と回帰結果の誤差クォータニオンを取る．
-    attiReg_qe(i+1,1:4) = q_pro(Dp_test(i+1,1:4)', attiReg(i+1,1:4)')'; % 転置に注意
+    attiReg_qe(i+1,1:4) = q_error(attiReg(i+1,1:4)', Dp_test(i+1,1:4)')'; % 転置に注意
     % anglar velocity
     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
     % Light Curves
-    mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,1);
+    mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
 end
 
 
@@ -289,8 +287,8 @@ function y = gpr(xx, xtrain, ytrain, params)
     Kinv = inv(K);
 %     N = length(xx) + length(xtrain); % xxは学習データ以外の姿勢? 学習データと完全に被らなければ足すだけでいい，のか？
     N = length(xx);
-    L = length(xtrain(1,:));
-    mu = zeros(N, L); var = zeros(N, L);
+%     L = length(xtrain(1,:));
+    mu = zeros(N, 1); var = zeros(N, 1);
     for i = 1:1:N
         s = gaussian_kernel(xx(i,:), xx(i,:), params, false, true); % カーネル行列k_**
         k = kv(xx(i,:), xtrain, params); % 縦ベクトル (回帰する状態のカーネル行列k_*)
