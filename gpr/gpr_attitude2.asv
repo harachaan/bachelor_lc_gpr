@@ -263,8 +263,8 @@ function y = gpr(xx, xtrain, ytrain, params)
     Kinv = inv(K);
 %     N = length(xx) + length(xtrain); % xxは学習データ以外の姿勢? 学習データと完全に被らなければ足すだけでいい，のか？
     N = length(xx);
-%     L = length(ytrain(1,:));
-    mu = zeros(N, 1); var = zeros(N, 1);
+    L = length(ytrain(1,:));
+    mu = zeros(N, L); var = zeros(N, L);
     for i = 1:1:N
         s = gaussian_kernel(xx(i,:), xx(i,:), params, false, true); % カーネル行列k_**
         k = kv(xx(i,:), xtrain, params); % 縦ベクトル (回帰する状態のカーネル行列k_*)

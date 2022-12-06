@@ -11,6 +11,34 @@ sigma = log(1);
 eta = log(1);
 params = [tau sigma eta];
 
+% -----------------------------------
+% % gprがちゃんと動いている確認
+% data = readmatrix('gpr.dat');
+% xtrain = zeros(length(data), 1); ytrain = zeros(length(data), 1);
+% for i = 1:1:length(data)
+%     xtrain(i,1) = data(i,1);
+%     ytrain(i,1) = data(i,2);
+% end
+% xx = (-1:0.01:4)';
+% regression = gpr(xx, xtrain, ytrain, params);
+% mu = regression(:,1); var = regression(:,2);
+% two_sigma1 = mu - 2 * sqrt(var); two_sigma2 = mu + 2 * sqrt(var);
+% 
+% % plot
+% f1 = figure;
+% figure(f1)
+% patch([xx', fliplr(xx')], [two_sigma1', fliplr(two_sigma2')], 'c');
+% hold on;
+% plot(xtrain, ytrain, 'bx', MarkerSize=20);
+% hold on;
+% plot(xx, mu, 'b-', LineWidth=2);
+% title("GPR with parameters estimation");
+% save_name = "gpr_with_params_estimation.png";
+% saveas(gcf, save_name);
+
+
+% --------------------------------------
+
 % 学習データ読み込み
 % (from yoshimulibrary...)
 Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv');
@@ -20,7 +48,7 @@ xtrain = Dp(:,1:7);
 % q1_train = Dp(:,1,:); q2_train = Dp(:,2,:); q3_train = Dp(:,3,:); q4_train = Dp(:,4,:);
 % w1_train = Dp(:,5,:); w2_train = Dp(:,6,:); w3_train = Dp(:,7,:);
 % 出力の学習データ
-ytrain = [Dp(:,8:14) t_mApp(:,3)];
+ytrain = [Dp(:,8:14), t_mApp(:,3)]; ytrain(isnan(ytrain)) = 0;
 % delta_q1_train = Dp(:,1,:); delta_q2_train = Dp(:,2,:); delta_q3_train = Dp(:,3,:); delta_q4_train = Dp(:,4,:);
 % delta_w1_train = Dp(:,5,:); delta_w2_train = Dp(:,6,:); delta_w3_train = Dp(:,7,:);
 
@@ -43,6 +71,8 @@ t_test = t_mApp_test(1:length(t_mApp_test), 1);
 xx = Dp_test(:, 1:7);
 N = length(xx); % これがあってるかわからん
 yy_mu = zeros(N, length(ytrain(1,:))); yy_var = zeros(N, length(ytrain(1,:)));
+a = gpr(xx, xtrain, ytrain(:,8), params);
+
 for i = 1:1:length(ytrain(1,:))
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
@@ -63,8 +93,6 @@ mAppReg = zeros(N, 1); mAppReg(1,1) = mAppIni;
 for i = 1:1:(N-1)
     % quaternions
     attiReg(i+1,1:4) = q_pro(yy_mu(i,1:4)', attiReg(i,1:4)')'; % 転置に注意
-    % 真値と回帰結果の誤差クォータニオンを取る
-
     % anglar velocity
     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
     % Light Curves
@@ -263,7 +291,7 @@ function y = gpr(xx, xtrain, ytrain, params)
     Kinv = inv(K);
 %     N = length(xx) + length(xtrain); % xxは学習データ以外の姿勢? 学習データと完全に被らなければ足すだけでいい，のか？
     N = length(xx);
-%     L = length(ytrain(1,:));
+%     L = length(xtrain(1,:));
     mu = zeros(N, 1); var = zeros(N, 1);
     for i = 1:1:N
         s = gaussian_kernel(xx(i,:), xx(i,:), params, false, true); % カーネル行列k_**
