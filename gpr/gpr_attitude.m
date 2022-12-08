@@ -62,7 +62,7 @@ N = length(xx);
 yy_mu = zeros(N, length(ytrain(1,:))); yy_var = zeros(N, length(xx(1,:)));
 % a = gpr(xx, xtrain, ytrain(:,8), params);
 for i = 1:1:length(ytrain(1,:))
-    regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
+    regression = gpr2(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
 end
 % クォータニオンの制約を満たすようにしたい
@@ -301,7 +301,22 @@ function y = gpr(xx, xtrain, ytrain, params)
     y = [mu var]; % 入力された姿勢の次の差分の確率分布が回帰された？
 end
 
-
+% train dataのoutputの平均を0と仮定せずに考慮に入れたgpr
+function y = gpr2(xx, xtrain, ytrain, params)
+    K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
+    N = length(xx);
+    Kinv2 = inv(K + params(1,3)^2 * eye(N)); % alphaのための逆行列
+    m = zeros(N, 1); var = zeros(N, 1);
+    for i = 1:1:N
+        s = gaussian_kernel(xx(i,:), xx(i,:), params, false, true); % カーネル行列k_**
+        k = kv(xx(i,:), xtrain, params); % 縦ベクトル (回帰する状態のカーネル行列k_*)
+        mu = mean(ytrain); % 学習データの出力の平均
+        alpha = Kinv2 * (ytrain - mu); % kvの重み？
+        m(i,1) = 0 + alpha' * k; % predictive mean
+        var(i,1) = s + params(1,3)^2 - k' * Kinv2 * k; % predictive variance
+    end
+    y = [m var]; % 入力された姿勢の次の差分の確率分布が回帰された？
+end
 
 
 % 
