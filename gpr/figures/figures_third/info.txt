@@ -1,0 +1,3 @@
+train data: flatPlate002
+test data: flatPlate01
+without Light Curves

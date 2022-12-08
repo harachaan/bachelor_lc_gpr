@@ -8,7 +8,7 @@ dir = pwd;
 % kernel parameters
 tau = log(1);
 sigma = log(1);
-eta = log(1);
+eta = log(0.1);
 params = [tau sigma eta];
 
 % -------------------------------------------------------------------------
@@ -16,26 +16,27 @@ params = [tau sigma eta];
 % (from yoshimulibrary...)
 Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate002.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-for i = 3:1:5
-    % flat plate の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    t_mApp = [t_mApp; df];
-    % box wing の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    Dp = [Dp; df]; 
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    t_mApp = [t_mApp; df];
-end
+% for i = 3:1:5
+%     % flat plate の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     t_mApp = [t_mApp; df];
+%     % box wing の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     Dp = [Dp; df]; 
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     t_mApp = [t_mApp; df];
+% end
 % 入力の学習データ
 xtrain = Dp(:,1:7);
 
 % 出力の学習データ
+% ytrain = Dp(:,8:14);
 ytrain = [Dp(:,8:14) t_mApp(:,3)]; ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0;
 
 t_train = t_mApp(1:(length(t_mApp)), 1);
@@ -97,15 +98,15 @@ f15 = figure;
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
-plot(xtrain(:,1), ytrain(:,1), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,1), ytrain(:,1), 'k.'); % 学習データ
 hold on;
 plot(xx(:,1), Dp_test(:,8), 'r.'); % 真値？
 hold on;
-plot(xx(:,1), yy_mu(:,1), 'b.', LineWidth=2); % 回帰結果？
+plot(xx(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
 title("q1");
 
 figure(f2);
-plot(xtrain(:,2), ytrain(:,2), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,2), ytrain(:,2), 'k.'); % 学習データ
 hold on;
 plot(xx(:,2), Dp_test(:,9), 'r.'); % 真値？
 hold on;
@@ -113,7 +114,7 @@ plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
 title("q2");
 
 figure(f3);
-plot(xtrain(:,3), ytrain(:,3), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,3), ytrain(:,3), 'k.'); % 学習データ
 hold on;
 plot(xx(:,3), Dp_test(:,10), 'r.'); % 真値？
 hold on;
@@ -121,7 +122,7 @@ plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
 title("q3");
 
 figure(f4);
-plot(xtrain(:,4), ytrain(:,4), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,4), ytrain(:,4), 'k.'); % 学習データ
 hold on;
 plot(xx(:,4), Dp_test(:,11), 'r.'); % 真値？
 hold on;
@@ -129,7 +130,7 @@ plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
 title("q4");
 
 figure(f5);
-plot(xtrain(:,5), ytrain(:,5), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,5), ytrain(:,5), 'k.'); % 学習データ
 hold on;
 plot(xx(:,5), Dp_test(:,12), 'r.'); % 真値？
 hold on;
@@ -137,7 +138,7 @@ plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
 title("w1");
 
 figure(f6);
-plot(xtrain(:,6), ytrain(:,6), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,6), ytrain(:,6), 'k.'); % 学習データ
 hold on;
 plot(xx(:,6), Dp_test(:,13), 'r.'); % 真値？
 hold on;
@@ -145,7 +146,7 @@ plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
 title("w2");
 
 figure(f7);
-plot(xtrain(:,7), ytrain(:,7), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,7), ytrain(:,7), 'k.'); % 学習データ
 hold on;
 plot(xx(:,7), Dp_test(:,14), 'r.'); % 真値？
 hold on;
@@ -184,10 +185,10 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f11);
-% plot(t_test, Dp_test(:,4), 'r.'); 
-% hold on;
-% plot(t_test, attiReg(:,4), 'b.');
-% hold on;
+plot(t_test, Dp_test(:,4), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,4), 'b.');
+hold on;
 plot(t_test, attiReg_qe(:,4), 'g.');
 filename = "q4errorTimeHistory"; savename = strcat("figures/", filename, ".png");
 title(filename);
@@ -203,6 +204,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f13);
+plot(t_test, xtrain(:,6), 'k.'); % 学習データ
+hold on;
 plot(t_test, Dp_test(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
