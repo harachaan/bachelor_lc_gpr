@@ -81,7 +81,7 @@ attiReg_qe = zeros(N, 4); attiReg_qe(1,:) = q_error(Dp_test(1,1:4)',attiReg(1,1:
 mAppReg = zeros(N, 1); mAppReg(1,1) = mAppIni;
 for i = 1:1:(N-1)
     % quaternions
-    attiReg(i+1,1:4) = q_pro(yy_mu(i,1:4)', attiReg(i,1:4)')'; % 転置に注意
+    attiReg(i+1,1:4) = q_pro(attiReg(i,1:4)', yy_mu(i,1:4)')'; % 転置に注意
     % 真値と回帰結果の誤差クォータニオンを取る．
     attiReg_qe(i+1,1:4) = q_error(attiReg(i+1,1:4)', Dp_test(i+1,1:4)')'; % 転置に注意
     % anglar velocity
