@@ -18,27 +18,27 @@ params = [tau sigma eta];
 % (constructed from yoshimulibrary...)
 Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate002.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-% for i = 3:1:5
-%     % flat plate の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-%     % box wing の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     Dp = [Dp; df]; 
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-% end
+for i = 3:1:5
+    % flat plate の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+    % box wing の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    Dp = [Dp; df]; 
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+end
 % テストデータ読み込み
-% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
-% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
+Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
+% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
+% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
 xtrain = [q2zyx_h(Dp(:,1:4)) Dp(:,5:7)]; % 学習データの入力 (Euler angleに変換)
 xtest = [q2zyx_h(Dp_test(:,1:4)) Dp_test(:,5:7)]; % テストデータの入力 (Euler angleに変換)
@@ -231,7 +231,7 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f14);
-plot(t_test, t_mApp(:,2), 'k.'); % 学習データ
+plot(t_test, t_mApp(1:Ntest,2), 'k.'); % 学習データ
 hold on;
 plot(t_test, t_mApp_test(:,2), 'r.'); 
 hold on;
@@ -239,7 +239,7 @@ plot(t_test, mAppReg(:,1), 'b.');
 hold on;
 filename = "lightcurves"; savename = strcat("figures/", filename, ".png");
 title(filename);
-saveas(gcf, savename);あり
+saveas(gcf, savename);
 
 
 % -------------------------------------------------------------------------
