@@ -105,7 +105,7 @@ end
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
 f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
-f15 = figure;
+% f15 = figure;
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
@@ -165,6 +165,8 @@ title("w3");
 % title("w3");
 
 figure(f8);
+plot(t_test, xtrain(:,1), 'k.'); % 学習データ
+hold on;
 plot(t_test, xtest(:,1), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,1), 'b.');
@@ -174,6 +176,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f9);
+plot(t_test, xtrain(:,2), 'k.'); % 学習データ
+hold on;
 plot(t_test, xtest(:,2), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,2), 'b.');
@@ -183,6 +187,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f10);
+plot(t_test, xtrain(:,3), 'k.'); % 学習データ
+hold on;
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
@@ -192,6 +198,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f11);
+plot(t_test, xtrain(:,4), 'k.'); % 学習データ
+hold on;
 plot(t_test, xtest(:,4), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,4), 'b.');
@@ -201,6 +209,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f12);
+plot(t_test, xtrain(:,5), 'k.'); % 学習データ
+hold on;
 plot(t_test, xtest(:,5), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
@@ -221,13 +231,15 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f14);
+plot(t_test, t_mApp(:,2), 'k.'); % 学習データ
+hold on;
 plot(t_test, t_mApp_test(:,2), 'r.'); 
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
 hold on;
 filename = "lightcurves"; savename = strcat("figures/", filename, ".png");
 title(filename);
-saveas(gcf, savename);
+saveas(gcf, savename);あり
 
 
 % -------------------------------------------------------------------------
