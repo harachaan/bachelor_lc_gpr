@@ -1,4 +1,4 @@
-% 姿勢，軌道を状態変数(変数７個？)に持つGPR
+% 姿勢(quaternions)，軌道を状態変数(変数７個)に持つGPR
 clc
 clear
 close all
@@ -47,13 +47,13 @@ Lx = length(xtrain(1,:)); Ly = Lx + 1; % 出力の次元はライトカーブで
 Ntrain = length(xtrain(:,1)) - 1; Ntest = length(xtest) - 1; %今回扱う学習データの次元とデータ数(出力が差分だから-1)
 ytrain = zeros(Ntrain, Ly); ytest = zeros(Ntest, Ly); % 
 for i = 1:1:(Ntrain)
-    ytrain(i,1:4) = q_error(xtrain(i,1:4)', xtrain(i+1,1:4)')';
+    ytrain(i,1:4) = q_error(xtrain(i+1,1:4)', xtrain(i,1:4)')';
     ytrain(i,5:7) = xtrain(i+1,5:7) - xtrain(i,5:7);
 %     ytrain(i,8) = t_mApp(i+1,2) - t_mApp(i,2);
     ytrain(i,8) = t_mApp(i,2); % ライトカーブは差分じゃなくそのままを学習するようにした
 end
 for i = 1:1:Ntest
-    ytest(i,1:4) = q_error(xtest(i,1:4)', xtest(i+1,1:4)')';
+    ytest(i,1:4) = q_error(xtest(i+1,1:4)', xtest(i,1:4)')';
     ytest(i,5:7) = xtest(i+1,5:7) - xtest(i,5:7);
 %     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
     ytest(i,8) = t_mApp_test(i,2);
@@ -99,7 +99,7 @@ for i = 1:1:(Ntest-1)
     % quaternions
     attiReg(i+1,1:4) = q_pro(attiReg(i,1:4)', yy_mu(i,1:4)')'; % 転置に注意
     % 真値と回帰結果の誤差クォータニオンを取る．
-    attiReg_qe(i+1,1:4) = q_error(attiReg(i+1,1:4)', Dp_test(i+1,1:4)')'; % 転置に注意
+    attiReg_qe(i+1,1:4) = q_error(Dp_test(i+1,1:4)', attiReg(i+1,1:4)')'; % 転置に注意
     % anglar velocity
     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
     % Light Curves
