@@ -12,6 +12,7 @@ sigma = log(1);
 eta = log(0.1);
 params = [tau sigma eta];
 
+
 % -------------------------------------------------------------------------
 % 学習データ読み込み
 % (constructed from yoshimulibrary...)
@@ -58,6 +59,10 @@ for i = 1:1:Ntest
 end
 ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0; % とりあえずinfとNaNは0にした
 % 学習データとテストデータの平均を0にする
+for i = 1:1:Ly
+    ytrain(:,i) = ytrain(:,i) - mean(ytrain(:,i));
+    ytest(:,i) = ytest(:,i) - mean(ytest(:,i));
+end
 
 % 学習データとテストデータの出力は作れたので，サイズを統一する
 xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
