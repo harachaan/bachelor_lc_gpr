@@ -94,7 +94,8 @@ two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 attiIni = xx(1, 1:7); mAppIni = t_mApp_test(1,2);
 attiReg = zeros(Ntest, length(xx(1,:))); attiReg(1,:) = attiIni;
 attiReg_qe = zeros(Ntest, 4); attiReg_qe(1,:) = q_error(Dp_test(1,1:4)',attiReg(1,1:4)')'; % 誤差クォータニオンの初期値
-mAppReg = zeros(Ntest, 1); mAppReg(1,1) = mAppIni;
+% mAppReg = zeros(Ntest, 1); mAppReg(1,1) = mAppIni;
+mAppReg = yy_mu(:,8);
 for i = 1:1:(Ntest-1)
     % quaternions
     attiReg(i+1,1:4) = q_pro(attiReg(i,1:4)', yy_mu(i,1:4)')'; % 転置に注意
@@ -103,7 +104,7 @@ for i = 1:1:(Ntest-1)
     % anglar velocity
     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
     % Light Curves
-    mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
+%     mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
 end
 
 
