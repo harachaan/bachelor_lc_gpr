@@ -49,17 +49,18 @@ ytrain = zeros(Ntrain, Ly); ytest = zeros(Ntest, Ly); %
 for i = 1:1:(Ntrain)
     ytrain(i,1:4) = q_error(xtrain(i,1:4)', xtrain(i+1,1:4)')';
     ytrain(i,5:7) = xtrain(i+1,5:7) - xtrain(i,5:7);
-    ytrain(i,8) = t_mApp(i+1,2) - t_mApp(i,2);
+%     ytrain(i,8) = t_mApp(i+1,2) - t_mApp(i,2);
+    ytrain(i,8) = t_mApp(i,2); % ライトカーブは差分じゃなくそのままを学習するようにした
 end
 for i = 1:1:Ntest
     ytest(i,1:4) = q_error(xtest(i,1:4)', xtest(i+1,1:4)')';
     ytest(i,5:7) = xtest(i+1,5:7) - xtest(i,5:7);
-    ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
+%     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
 end
 ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0;
 % 学習データとテストデータの出力は作れたので，サイズを統一する
 xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
-t_mApp_test = 
+t_mApp_test = t_mApp_test(1:Ntest,:);
 t_test = t_mApp_test(1:Ntest, 1);
 
 % 確め計算ゾーン ------------------------------------------------------------
@@ -77,7 +78,7 @@ xx = [xtest(:, 1:7)];
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
 % a = gpr(xx, xtrain, ytrain(:,8), params);
 for i = 1:1:length(ytrain(1,:))
-    regression = gpr2(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
+    regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
 end
 % クォータニオンの制約を満たすようにしたい

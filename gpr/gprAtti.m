@@ -42,19 +42,21 @@ t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.cs
 xtrain = Dp(:,1:7); % 学習データの入力
 xtest = Dp_test(:,1:7); % テストデータの入力
 
-% 学習データ，テストデータの出力（姿勢，ライトカーブの差分）
+% 学習データ，テストデータの出力（姿勢，ライトカーブ）
 Lx = length(xtrain(1,:)); Ly = Lx + 1; % 出力の次元はライトカーブで1増える
 Ntrain = length(xtrain(:,1)) - 1; Ntest = length(xtest) - 1; %今回扱う学習データの次元とデータ数(出力が差分だから-1)
 ytrain = zeros(Ntrain, Ly); ytest = zeros(Ntest, Ly); % 
 for i = 1:1:(Ntrain)
     ytrain(i,1:4) = q_error(xtrain(i,1:4)', xtrain(i+1,1:4)')';
     ytrain(i,5:7) = xtrain(i+1,5:7) - xtrain(i,5:7);
-    ytrain(i,8) = t_mApp(i+1,2) - t_mApp(i,2);
+%     ytrain(i,8) = t_mApp(i+1,2) - t_mApp(i,2);
+    ytrain(i,8) = t_mApp(i,2); % ライトカーブは差分じゃなくそのままを学習するようにした
 end
 for i = 1:1:Ntest
     ytest(i,1:4) = q_error(xtest(i,1:4)', xtest(i+1,1:4)')';
     ytest(i,5:7) = xtest(i+1,5:7) - xtest(i,5:7);
-    ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
+%     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
+    ytest(i,8) = t_mApp_test(i,2);
 end
 ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0;
 % 学習データとテストデータの出力は作れたので，サイズを統一する
