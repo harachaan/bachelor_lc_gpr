@@ -18,22 +18,22 @@ params = [tau sigma eta];
 % (constructed from yoshimulibrary...)
 Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate002.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-for i = 3:1:5
-    % flat plate の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    t_mApp = [t_mApp; df];
-    % box wing の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    Dp = [Dp; df]; 
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    t_mApp = [t_mApp; df];
-end
+% for i = 3:1:5
+%     % flat plate の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     t_mApp = [t_mApp; df];
+%     % box wing の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     Dp = [Dp; df]; 
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     t_mApp = [t_mApp; df];
+% end
 % テストデータ読み込み
 Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
 t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
@@ -57,17 +57,24 @@ for i = 1:1:Ntest
 %     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
     ytest(i,7) = t_mApp_test(i,2);
 end
-ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0; % とりあえずinfとNaNは0にした
+% 学習データとテストデータの出力は作れたので，各データセットの入力と出力のサイズを統一する
+xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
+
+t_mApp_test = t_mApp_test(1:Ntest,:);
+t_test = t_mApp_test(1:Ntest, 1);
+
+% infの行を消し去りたい
+Dp = [xtrain ytrain]; Dp_test = [xtest ytest]; % データセットごとinfの行を消すために一回入力と出力を結合する
+Dp(any(isinf(Dp)'),:) = []; Dp_test(any(isinf(Dp_test)'),:) = [];% やっぱりinfのある行は取り除いた
+xtrain = Dp(:,1:6); ytrain = Dp(:,7:13); xtest = Dp_test(:,1:6); ytest = Dp_test(:,7:13); 
+
+% NtrainとNtestが変化したので再代入
+Ntrain = length(xtrain(:,1)); Ntest = length(xtest(:,1));
 % 学習データとテストデータの平均を0にする
 for i = 1:1:Ly
     ytrain(:,i) = ytrain(:,i) - mean(ytrain(:,i));
     ytest(:,i) = ytest(:,i) - mean(ytest(:,i));
 end
-
-% 学習データとテストデータの出力は作れたので，サイズを統一する
-xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
-t_mApp_test = t_mApp_test(1:Ntest,:);
-t_test = t_mApp_test(1:Ntest, 1);
 
 % 確め計算ゾーン ------------------------------------------------------------
 gaussian_kernel(xtrain(2,:), xtrain(3,:), params);
@@ -165,7 +172,7 @@ title("w3");
 % title("w3");
 
 figure(f8);
-% plot(t_test, xtrain(:,1), 'k.'); % 学習データ
+% plot(t_test, xtrain(1:Ntest,1), 'k.'); % 学習データ
 % hold on;
 plot(t_test, xtest(:,1), 'r.'); 
 hold on;
@@ -176,7 +183,7 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f9);
-% plot(t_test, xtrain(:,2), 'k.'); % 学習データ
+% plot(t_test, xtrain(1:Ntest,2), 'k.'); % 学習データ
 % hold on;
 plot(t_test, xtest(:,2), 'r.'); 
 hold on;
@@ -187,7 +194,7 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f10);
-% plot(t_test, xtrain(:,3), 'k.'); % 学習データ
+% plot(t_test, xtrain(1:Ntest,3), 'k.'); % 学習データ
 % hold on;
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
@@ -198,7 +205,7 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f11);
-% plot(t_test, xtrain(:,4), 'k.'); % 学習データ
+% plot(t_test, xtrain(1:Ntest,4), 'k.'); % 学習データ
 % hold on;
 plot(t_test, xtest(:,4), 'r.'); 
 hold on;
@@ -209,7 +216,7 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f12);
-% plot(t_test, xtrain(:,5), 'k.'); % 学習データ
+% plot(t_test, xtrain(1:Ntest,5), 'k.'); % 学習データ
 % hold on;
 plot(t_test, xtest(:,5), 'r.'); 
 hold on;
@@ -220,8 +227,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f13);
-plot(t_test, xtrain(:,6), 'k.'); % 学習データ
-hold on;
+% plot(t_test, xtrain(1:Ntest,6), 'k.'); % 学習データ
+% hold on;
 plot(t_test, xtest(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
@@ -231,8 +238,8 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f14);
-plot(t_test, t_mApp(1:Ntest,2), 'k.'); % 学習データ
-hold on;
+% plot(t_test, t_mApp(1:Ntest,2), 'k.'); % 学習データ
+% hold on;
 plot(t_test, t_mApp_test(:,2), 'r.'); 
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
