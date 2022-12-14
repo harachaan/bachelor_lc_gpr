@@ -1,44 +1,68 @@
-% 姿勢，軌道を状態変数(変数７個？)に持つGPR
+% 姿勢(quaternions)，軌道を状態変数(変数７個)に持つGPR
 clc
 clear
 close all
 dir = pwd;
 % addpath(strcat(dir, ''))
+addpath('hara_functions/');
 
 % kernel parameters
 tau = log(1);
 sigma = log(1);
-eta = log(1);
+eta = log(0.1);
 params = [tau sigma eta];
 
 % -------------------------------------------------------------------------
 % 学習データ読み込み
-% (from yoshimulibrary...)
+% (constructed from yoshimulibrary...)
 Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate002.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-for i = 3:1:5
-    % flat plate の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    t_mApp = [t_mApp; df];
-    % box wing の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    Dp = [Dp; df]; 
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    t_mApp = [t_mApp; df];
+% for i = 3:1:5
+%     % flat plate の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     t_mApp = [t_mApp; df];
+%     % box wing の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     Dp = [Dp; df]; 
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+%     df = readmatrix(filename);
+%     t_mApp = [t_mApp; df];
+% end
+% テストデータ読み込み
+% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
+% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
+Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
+
+xtrain = Dp(:,1:7); % 学習データの入力
+xtest = Dp_test(:,1:7); % テストデータの入力
+
+% 学習データ，テストデータの出力（姿勢，ライトカーブ）
+Lx = length(xtrain(1,:)); Ly = Lx + 1; % 出力の次元はライトカーブで1増える
+Ntrain = length(xtrain(:,1)) - 1; Ntest = length(xtest) - 1; %今回扱う学習データの次元とデータ数(出力が差分だから-1)
+ytrain = zeros(Ntrain, Ly); ytest = zeros(Ntest, Ly); % 
+for i = 1:1:(Ntrain)
+    ytrain(i,1:4) = q_error(xtrain(i+1,1:4)', xtrain(i,1:4)')';
+    ytrain(i,5:7) = xtrain(i+1,5:7) - xtrain(i,5:7);
+%     ytrain(i,8) = t_mApp(i+1,2) - t_mApp(i,2);
+    ytrain(i,8) = t_mApp(i,2); % ライトカーブは差分じゃなくそのままを学習するようにした
 end
-% 入力の学習データ
-xtrain = Dp(:,1:7);
-
-% 出力の学習データ
-ytrain = [Dp(:,8:14) t_mApp(:,3)]; ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0;
-
-t_train = t_mApp(1:(length(t_mApp)), 1);
+for i = 1:1:Ntest
+    ytest(i,1:4) = q_error(xtest(i+1,1:4)', xtest(i,1:4)')';
+    ytest(i,5:7) = xtest(i+1,5:7) - xtest(i,5:7);
+%     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
+    ytest(i,8) = t_mApp_test(i,2);
+end
+ytrain(isnan(ytrain)) = 0; ytrain(~isfinite(ytrain)) = 0;
+% 学習データとテストデータの出力は作れたので，サイズを統一する
+xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
+t_mApp_test = t_mApp_test(1:Ntest,:);
+t_test = t_mApp_test(1:Ntest, 1);
 
 % 確め計算ゾーン ------------------------------------------------------------
 gaussian_kernel(xtrain(2,:), xtrain(3,:), params);
@@ -51,14 +75,8 @@ kv(xtrain(2,:), xtrain, params);
 % params = optimize1(params, xtrain, ytrain);
 
 % 回帰の計算
-% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
-% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
-Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-t_test = t_mApp_test(:, 1);
-xx = [Dp_test(:, 1:7)];
-N = length(xx); 
-yy_mu = zeros(N, length(ytrain(1,:))); yy_var = zeros(N, length(xx(1,:)));
+xx = [xtest(:, 1:7)];
+yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
 % a = gpr(xx, xtrain, ytrain(:,8), params);
 for i = 1:1:length(ytrain(1,:))
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
@@ -73,20 +91,20 @@ end
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
-addpath('hara_functions/');
 attiIni = xx(1, 1:7); mAppIni = t_mApp_test(1,2);
-attiReg = zeros(N, length(xx(1,:))); attiReg(1,:) = attiIni;
-attiReg_qe = zeros(N, 4); attiReg_qe(1,:) = q_error(Dp_test(1,1:4)',attiReg(1,1:4)')'; % 誤差クォータニオンの初期値
-mAppReg = zeros(N, 1); mAppReg(1,1) = mAppIni;
-for i = 1:1:(N-1)
+attiReg = zeros(Ntest, length(xx(1,:))); attiReg(1,:) = attiIni;
+attiReg_qe = zeros(Ntest, 4); attiReg_qe(1,:) = q_error(Dp_test(1,1:4)',attiReg(1,1:4)')'; % 誤差クォータニオンの初期値
+% mAppReg = zeros(Ntest, 1); mAppReg(1,1) = mAppIni;
+mAppReg = yy_mu(:,8);
+for i = 1:1:(Ntest-1)
     % quaternions
-    attiReg(i+1,1:4) = q_pro(yy_mu(i,1:4)', attiReg(i,1:4)')'; % 転置に注意
+    attiReg(i+1,1:4) = q_pro(attiReg(i,1:4)', yy_mu(i,1:4)')'; % 転置に注意
     % 真値と回帰結果の誤差クォータニオンを取る．
-    attiReg_qe(i+1,1:4) = q_error(attiReg(i+1,1:4)', Dp_test(i+1,1:4)')'; % 転置に注意
+    attiReg_qe(i+1,1:4) = q_error(Dp_test(i+1,1:4)', attiReg(i+1,1:4)')'; % 転置に注意
     % anglar velocity
     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7);
     % Light Curves
-    mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
+%     mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
 end
 
 
@@ -97,57 +115,57 @@ f15 = figure;
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
-plot(xtrain(:,1), ytrain(:,1), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,1), ytrain(:,1), 'k.'); % 学習データ
 hold on;
-plot(xx(:,1), Dp_test(:,8), 'r.'); % 真値？
+plot(xx(:,1), ytest(:,1), 'r.'); % 真値？
 hold on;
-plot(xx(:,1), yy_mu(:,1), 'b.', LineWidth=2); % 回帰結果？
+plot(xx(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
 title("q1");
 
 figure(f2);
-plot(xtrain(:,2), ytrain(:,2), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,2), ytrain(:,2), 'k.'); % 学習データ
 hold on;
-plot(xx(:,2), Dp_test(:,9), 'r.'); % 真値？
+plot(xx(:,2), ytest(:,2), 'r.'); % 真値？
 hold on;
 plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
 title("q2");
 
 figure(f3);
-plot(xtrain(:,3), ytrain(:,3), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,3), ytrain(:,3), 'k.'); % 学習データ
 hold on;
-plot(xx(:,3), Dp_test(:,10), 'r.'); % 真値？
+plot(xx(:,3), ytest(:,3), 'r.'); % 真値？
 hold on;
 plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
 title("q3");
 
 figure(f4);
-plot(xtrain(:,4), ytrain(:,4), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,4), ytrain(:,4), 'k.'); % 学習データ
 hold on;
-plot(xx(:,4), Dp_test(:,11), 'r.'); % 真値？
+plot(xx(:,4), ytest(:,4), 'r.'); % 真値？
 hold on;
 plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
 title("q4");
 
 figure(f5);
-plot(xtrain(:,5), ytrain(:,5), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,5), ytrain(:,5), 'k.'); % 学習データ
 hold on;
-plot(xx(:,5), Dp_test(:,12), 'r.'); % 真値？
+plot(xx(:,5), ytest(:,5), 'r.'); % 真値？
 hold on;
 plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
 title("w1");
 
 figure(f6);
-plot(xtrain(:,6), ytrain(:,6), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,6), ytrain(:,6), 'k.'); % 学習データ
 hold on;
-plot(xx(:,6), Dp_test(:,13), 'r.'); % 真値？
+plot(xx(:,6), ytest(:,6), 'r.'); % 真値？
 hold on;
 plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
 title("w2");
 
 figure(f7);
-plot(xtrain(:,7), ytrain(:,7), 'k.', MarkerSize=10); % 学習データ
+plot(xtrain(:,7), ytrain(:,7), 'k.'); % 学習データ
 hold on;
-plot(xx(:,7), Dp_test(:,14), 'r.'); % 真値？
+plot(xx(:,7), ytest(:,7), 'r.'); % 真値？
 hold on;
 plot(xx(:,7), yy_mu(:,7), 'b.'); % 回帰結果？
 title("w3");
@@ -184,17 +202,17 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f11);
-% plot(t_test, Dp_test(:,4), 'r.'); 
-% hold on;
-% plot(t_test, attiReg(:,4), 'b.');
-% hold on;
+plot(t_test, xtest(:,4), 'r.'); 
+hold on;
+plot(t_test, attiReg(:,4), 'b.');
+hold on;
 plot(t_test, attiReg_qe(:,4), 'g.');
 filename = "q4errorTimeHistory"; savename = strcat("figures/", filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
 figure(f12);
-plot(t_test, Dp_test(:,5), 'r.'); 
+plot(t_test, xtest(:,5), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
 hold on;
@@ -203,7 +221,9 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f13);
-plot(t_test, Dp_test(:,6), 'r.'); 
+plot(t_test, xtrain(:,6), 'k.'); % 学習データ
+hold on;
+plot(t_test, xtest(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
 hold on;
@@ -212,7 +232,7 @@ title(filename);
 saveas(gcf, savename);
 
 figure(f14);
-plot(t_test, Dp_test(:,7), 'r.'); 
+plot(t_test, xtest(:,7), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,7), 'b.');
 hold on;
@@ -298,7 +318,22 @@ function y = gpr(xx, xtrain, ytrain, params)
     y = [mu var]; % 入力された姿勢の次の差分の確率分布が回帰された？
 end
 
-
+% train dataのoutputの平均を0と仮定せずに考慮に入れたgpr
+function y = gpr2(xx, xtrain, ytrain, params)
+    K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
+    N = length(xx);
+    Kinv2 = inv(K + params(1,3)^2 * eye(N)); % alphaのための逆行列
+    m = zeros(N, 1); var = zeros(N, 1);
+    for i = 1:1:N
+        s = gaussian_kernel(xx(i,:), xx(i,:), params, false, true); % カーネル行列k_**
+        k = kv(xx(i,:), xtrain, params); % 縦ベクトル (回帰する状態のカーネル行列k_*)
+        mu = mean(ytrain); % 学習データの出力の平均
+        alpha = Kinv2 * (ytrain - mu); % kvの重み？
+        m(i,1) = 0 + alpha' * k; % predictive mean
+        var(i,1) = s + params(1,3)^2 - k' * Kinv2 * k; % predictive variance
+    end
+    y = [m var]; % 入力された姿勢の次の差分の確率分布が回帰された？
+end
 
 
 % 
