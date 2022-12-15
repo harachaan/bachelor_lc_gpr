@@ -18,6 +18,13 @@ params = [tau sigma eta];
 % (constructed from yoshimulibrary...)
 Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate002.csv');
 t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
+filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', 2), '.csv');
+df = readmatrix(filename);
+Dp = [Dp; df]; 
+filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', 2), '.csv');
+df = readmatrix(filename);
+t_mApp = [t_mApp; df];
+
 % for i = 3:1:5
 %     % flat plate の学習データ
 %     filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
@@ -57,7 +64,7 @@ for i = 1:1:Ntest
 %     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
     ytest(i,7) = t_mApp_test(i,2);
 end
-% 学習データとテストデータの出力は作れたので，各データセットの入力と出力のサイズを統一する
+% 学習データとテストデータの出力は作れたので，各データセットの入力と出力のサイズを統一する（出力の方が1小さいので）
 xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
 
 % infの行を消し去りたい
@@ -68,15 +75,15 @@ xtrain = Dp(:,1:6); ytrain = Dp(:,7:13); xtest = Dp_test(:,1:6); ytest = Dp_test
 Ntrain = length(xtrain(:,1)); Ntest = length(xtest(:,1));% NtrainとNtestが変化したので再代入
 t_mApp_test = t_mApp_test(1:Ntest,:); t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
 
-% 学習データとテストデータの平均を0にする
+% 学習データとテストデータの出力の平均を0にする
 for i = 1:1:Ly
     ytrain(:,i) = ytrain(:,i) - mean(ytrain(:,i));
     ytest(:,i) = ytest(:,i) - mean(ytest(:,i));
 end
 
 % 確め計算ゾーン ------------------------------------------------------------
-gaussian_kernel(xtrain(2,:), xtrain(3,:), params);
-kv(xtrain(2,:), xtrain, params);
+% gaussian_kernel(xtrain(2,:), xtrain(3,:), params);
+% kv(xtrain(2,:), xtrain, params);
 % kernel_matrix()
 
 % -------------------------------------------------------------------------
@@ -84,6 +91,7 @@ kv(xtrain(2,:), xtrain, params);
 % カーネル行列のハイパーパラメータ推定
 % params = optimize1(params, xtrain, ytrain);
 
+tic
 % 回帰の計算
 xx = xtest;
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
@@ -94,6 +102,7 @@ for i = 1:1:length(ytrain(1,:))
 end
 
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
+tEnd = toc; % gpr７回にかかる時間
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
 attiIni = xx(1,:); mAppIni = t_mApp_test(1,2);
