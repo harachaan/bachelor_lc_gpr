@@ -8,7 +8,7 @@ addpath('hara_functions/');
 
 % kernel parameters
 tau = log(1);
-sigma = log(1);
+sigma = log(0.5);
 eta = log(0.1);
 params = [tau sigma eta];
 
@@ -68,9 +68,9 @@ end
 xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
 
 % infの行を消し去りたい
-X = [xtrain ytrain]; X_test = [xtest ytest]; % データセットごとinfの行を消すために一回入力と出力を結合する
-X(any(isinf(X)'),:) = []; X_test(any(isinf(X_test)'),:) = [];% やっぱりinfのある行は取り除いた
-xtrain = X(:,1:6); ytrain = X(:,7:13); xtest = X_test(:,1:6); ytest = X_test(:,7:13); 
+Dp = [xtrain ytrain]; Dp_test = [xtest ytest]; % データセットごとinfの行を消すために一回入力と出力を結合する
+Dp(any(isinf(Dp)'),:) = []; Dp_test(any(isinf(Dp_test)'),:) = [];% やっぱりinfのある行は取り除いた
+xtrain = Dp(:,1:6); ytrain = Dp(:,7:13); xtest = Dp_test(:,1:6); ytest = Dp_test(:,7:13); 
 
 Ntrain = length(xtrain(:,1)); Ntest = length(xtest(:,1));% NtrainとNtestが変化したので再代入
 t_mApp_test = t_mApp_test(1:Ntest,:); t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
