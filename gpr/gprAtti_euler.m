@@ -8,7 +8,7 @@ addpath('hara_functions/');
 
 % kernel parameters
 tau = log(1);
-sigma = log(0.5);
+sigma = log(0.3);
 eta = log(0.1);
 params = [tau sigma eta];
 
@@ -93,10 +93,11 @@ end
 
 tic
 % 回帰の計算
+Ly = Ly;
 xx = xtest;
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
 % a = gpr(xx, xtrain, ytrain(:,8), params);
-for i = 1:1:length(ytrain(1,:))
+for i = 1:1:Ly
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
 end

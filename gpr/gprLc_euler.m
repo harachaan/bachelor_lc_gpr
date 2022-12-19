@@ -6,7 +6,7 @@ close all
 addpath('hara_functions/');
 % -------------------------------------------------------------------------
 % kernel parameters
-tau = log(0.5);
+tau = log(1);
 sigma = log(1);
 eta = log(0.1);
 params = [tau sigma eta];
