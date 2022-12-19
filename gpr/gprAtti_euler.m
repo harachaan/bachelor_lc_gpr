@@ -17,14 +17,14 @@ params = [tau sigma eta];
 % -------------------------------------------------------------------------
 % 学習データ読み込み
 % (constructed from yoshimulibrary...)
-X = readmatrix('train_data_using_yoshimulibrary/X_flatPlate002.csv');
-t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', 2), '.csv');
-df = readmatrix(filename);
-X = [X; df]; 
-filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', 2), '.csv');
-df = readmatrix(filename);
-t_mApp = [t_mApp; df];
+% X = readmatrix('train_data_using_yoshimulibrary/X_flatPlate002.csv');
+% t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
+% filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', 2), '.csv');
+% df = readmatrix(filename);
+% X = [X; df]; 
+% filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', 2), '.csv');
+% df = readmatrix(filename);
+% t_mApp = [t_mApp; df];
 
 % for i = 3:1:5
 %     % flat plate の学習データ
@@ -42,6 +42,27 @@ t_mApp = [t_mApp; df];
 %     df = readmatrix(filename);
 %     t_mApp = [t_mApp; df];
 % end
+
+% 学習データ読み込み----------------------------------------------------------
+Ntraindata = 5;
+X = []; t_mApp = [];
+for i = 1:1:Ntraindata
+    % flat plate の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    X = [X; df]; % この場合の事前割り当てのやり方わかんない
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+    % box wing の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    X = [X; df]; 
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+end
+
 % テストデータ読み込み
 X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
@@ -87,14 +108,14 @@ end
 % kv(xtrain(2,:), xtrain, params);
 % kernel_matrix()
 
-% -------------------------------------------------------------------------
+%% -------------------------------------------------------------------------
 
 % カーネル行列のハイパーパラメータ推定
 % params = optimize1(params, xtrain, ytrain);
 
 tic
 % 回帰の計算
-Ly = Ly;
+% Ly = Ly;
 xx = xtest;
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
 % a = gpr(xx, xtrain, ytrain(:,8), params);
@@ -118,11 +139,11 @@ for i = 1:1:(Ntest-1)
 end
 
 
-% plot --------------------------------------------------------------------
+%% plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
 f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
 % f15 = figure;
-savedir = strcat(curdir, '../../temporary/X_gpr/');
+savedir = strcat(curdir, '/../../temporary/X_gpr/');
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
