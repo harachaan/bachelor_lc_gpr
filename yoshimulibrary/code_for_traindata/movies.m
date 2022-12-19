@@ -106,7 +106,9 @@ q_test = X_test(:,1:4); q_reg = X_reg(:,1:4);
 %% Show movie (inertial frame)
 % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies');
 % str = horzcat(movie_path,'.mp4');
-str = 'boxOneWing_test_movie.mp4';
+curdir = pwd;
+savedir = fullfile(curdir, '../../../temporary');
+str = strcat(savedir, '/boxOneWing_test_movie.mp4');
 vid = VideoWriter(str,'MPEG-4');
 open(vid);
 
@@ -173,7 +175,9 @@ end
  %% Show movie
 % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies/2windows');
 % str = horzcat(movie_path,'.mp4');
-str = 'boxOneWing_reg_movie.mp4';
+curdir = pwd;
+savedir = strcat(curdir, '/../../../temporary/');
+str = strcat(savedir, 'boxOneWing_reg_movie.mp4');
 vid = VideoWriter(str,'MPEG-4');
 open(vid);
 

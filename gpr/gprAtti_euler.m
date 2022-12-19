@@ -2,7 +2,8 @@
 clc
 clear
 close all
-dir = pwd;
+
+curdir = pwd;
 % addpath(strcat(dir, ''))
 addpath('hara_functions/');
 
@@ -121,6 +122,7 @@ end
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
 f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
 % f15 = figure;
+savedir = strcat(curdir, '../../temporary/X_gpr/');
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
@@ -129,7 +131,7 @@ hold on;
 plot(xx(:,1), ytest(:,1), 'r.'); % 真値？
 hold on;
 plot(xx(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
-filename = "deltaPhi"; savename = strcat("figures/", filename, ".png");
+filename = "deltaPhi"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -139,7 +141,7 @@ hold on;
 plot(xx(:,2), ytest(:,2), 'r.'); % 真値？
 hold on;
 plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
-filename = "deltaTheta"; savename = strcat("figures/", filename, ".png");
+filename = "deltaTheta"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -149,7 +151,7 @@ hold on;
 plot(xx(:,3), ytest(:,3), 'r.'); % 真値？
 hold on;
 plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
-filename = "deltaPsi"; savename = strcat("figures/", filename, ".png");
+filename = "deltaPsi"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -159,7 +161,7 @@ hold on;
 plot(xx(:,4), ytest(:,4), 'r.'); % 真値？
 hold on;
 plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
-filename = "deltaW1"; savename = strcat("figures/", filename, ".png");
+filename = "deltaW1"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -169,7 +171,7 @@ hold on;
 plot(xx(:,5), ytest(:,5), 'r.'); % 真値？
 hold on;
 plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
-filename = "deltaW2"; savename = strcat("figures/", filename, ".png");
+filename = "deltaW2"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -179,7 +181,7 @@ hold on;
 plot(xx(:,6), ytest(:,6), 'r.'); % 真値？
 hold on;
 plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
-filename = "deltaW3"; savename = strcat("figures/", filename, ".png");
+filename = "deltaW3"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -198,7 +200,7 @@ plot(t_test, xtest(:,1), 'r.');
 hold on;
 plot(t_test, attiReg(:,1), 'b.');
 hold on;
-filename = "phiTimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "phiTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -209,7 +211,7 @@ plot(t_test, xtest(:,2), 'r.');
 hold on;
 plot(t_test, attiReg(:,2), 'b.');
 hold on;
-filename = "thetaTimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "thetaTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -220,7 +222,7 @@ plot(t_test, xtest(:,3), 'r.');
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
 hold on;
-filename = "psiTimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "psiTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -231,7 +233,7 @@ plot(t_test, xtest(:,4), 'r.');
 hold on;
 plot(t_test, attiReg(:,4), 'b.');
 hold on;
-filename = "w1TimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "w1TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -242,7 +244,7 @@ plot(t_test, xtest(:,5), 'r.');
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
 hold on;
-filename = "w2TimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "w2TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -253,7 +255,7 @@ plot(t_test, xtest(:,6), 'r.');
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
 hold on;
-filename = "w3TimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "w3TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -264,7 +266,7 @@ plot(t_test, ytest(:,7), 'r.');
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
 hold on;
-filename = "lightcurves"; savename = strcat("figures/", filename, ".png");
+filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 

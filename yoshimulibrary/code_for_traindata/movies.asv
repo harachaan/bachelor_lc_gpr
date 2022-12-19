@@ -106,7 +106,9 @@ q_test = X_test(:,1:4); q_reg = X_reg(:,1:4);
 %% Show movie (inertial frame)
 % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies');
 % str = horzcat(movie_path,'.mp4');
-str = 'boxOneWing_test_movie.mp4';
+curdir = pwd;
+savedir = fullfile(curdir, '../../../temporary');
+str = strcat(savedir, '/boxOneWing_test_movie.mp4');
 vid = VideoWriter(str,'MPEG-4');
 open(vid);
 
@@ -173,7 +175,9 @@ end
  %% Show movie
 % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies/2windows');
 % str = horzcat(movie_path,'.mp4');
-str = 'boxOneWing_reg_movie.mp4';
+curdir = pwd;
+savedir = fullpath(curdir, '../../../temporary');
+str = strcat(savedir, '/boxOneWing_reg_movie.mp4');
 vid = VideoWriter(str,'MPEG-4');
 open(vid);
 
@@ -209,8 +213,13 @@ ylabel('$Y$, m','interpreter','latex')
 zlabel('$Z$, m','interpreter','latex')
 xlim([-3 3]), ylim([-3 3]), zlim([-3 3])
 
+nFaces = length(sat.faces);
+satFig_reg = patch('Faces',sat.faces,'Vertices',sat.vertices,'FaceVertexCData',zeros(nFaces,1),'FaceColor','flat');
+% satFig2 = patch('Faces',sat.faces,'Vertices',sat.vertices,'FaceVertexCData',zeros(nFaces,1),'FaceColor','flat');
+alpha(0.2);
 hold on
 view([35 -15])
+
 
 % drawEarth(0,0.5,const)
 % plot3(r(:,1),r(:,2),r(:,3),'LineWidth',1,'Color','k')
@@ -222,61 +231,64 @@ for i = 1:10:length(X_test)
     newVertices = qRotation(4, sat.vertices, qTmp);
     set(satFig, 'Vertices', newVertices);
 
-    Rbi = q2DCM(4, q(i,:)); % Direction Cosine Matrix from inertial frame to Body
-    h = cross(r,v); % orbital angular momentum w.r.t. inertial frame, nx3
-    N = cross(v(i,:)./norm(v(i,:)), h(i,:)./norm(h(i,:)))'; % N-axis of NTW frame at inertial frame
-    Roi = triad(N, v(i,:)'./norm(v(i,:)), [1;0;0], [0;1;0]); % DCM from inertial frame to orbital frame
-    Rio = Roi'; % DCM from orbital frame to inertial frame
-    Rbo = Rbi * Rio; % DCM from orbital frame to body-fixed frame
-    qbo = dcm2q(4, Rbo);
-
-    qTmp = repmat(qInv(4, qbo),size(sat.vertices,1),1);
-    newVertices = qRotation(4, sat.vertices, qTmp);
-    set(satFig, 'Vertices', newVertices);
+    qTmp_reg = repmat(qInv(4, q_reg(i,:)),size(sat.vertices,1),1);
+    newVertices_reg = qRotation(4, sat.vertices, qTmp_reg);
+    set(satFig_reg, 'Vertices', newVertices_reg);
+%     Rbi = q2DCM(4, q(i,:)); % Direction Cosine Matrix from inertial frame to Body
+%     h = cross(r,v); % orbital angular momentum w.r.t. inertial frame, nx3
+%     N = cross(v(i,:)./norm(v(i,:)), h(i,:)./norm(h(i,:)))'; % N-axis of NTW frame at inertial frame
+%     Roi = triad(N, v(i,:)'./norm(v(i,:)), [1;0;0], [0;1;0]); % DCM from inertial frame to orbital frame
+%     Rio = Roi'; % DCM from orbital frame to inertial frame
+%     Rbo = Rbi * Rio; % DCM from orbital frame to body-fixed frame
+%     qbo = dcm2q(4, Rbo);
+% 
+%     qTmp = repmat(qInv(4, qbo),size(sat.vertices,1),1);
+%     newVertices = qRotation(4, sat.vertices, qTmp);
+%     set(satFig, 'Vertices', newVertices);
 
 %     qTmp2 = repmat(qInv(4, q(i,:)),size(sat.vertices,1),1);
 %     newVertices = qRotation(4, sat.vertices, qTmp2);
 %     set(satFig2, 'Vertices', newVertices);
-
-    if bface(i) == 1
-        tmp = zeros(nFaces,1);
-        tmp(6) = 1;
-        tmp(12) = 1;
-        set(satFig, 'CData', tmp);
-
-    elseif bface(i) == 2
-        tmp = zeros(nFaces,1);
-        tmp(1) = 1;
-        tmp(7) = 1;
-        set(satFig, 'CData', tmp);
-        
-    elseif bface(i) == 3
-        tmp = zeros(nFaces,1);
-        tmp(5) = 1;
-        tmp(11) = 1;
-        set(satFig, 'CData', tmp);
-        
-    elseif bface(i) == 4
-        tmp = zeros(nFaces,1);
-        tmp(2) = 1;
-        tmp(8) = 1;
-        set(satFig, 'CData', tmp);
-        
-    elseif bface(i) == 5
-        tmp = zeros(nFaces,1);
-        tmp(4) = 1;
-        tmp(10) = 1;
-        set(satFig, 'CData', tmp);
-        
-    else
-        tmp = zeros(nFaces,1);
-        tmp(3) = 1;
-        tmp(9) = 1;
-        set(satFig, 'CData', tmp);
-        
-    end
-
-    set(posi,'xdata',r(i,1),'ydata',r(i,2),'zdata',r(i,3));
+% 
+%     if bface(i) == 1
+%         tmp = zeros(nFaces,1);
+%         tmp(6) = 1;
+%         tmp(12) = 1;
+%         set(satFig, 'CData', tmp);
+% 
+%     elseif bface(i) == 2
+%         tmp = zeros(nFaces,1);
+%         tmp(1) = 1;
+%         tmp(7) = 1;
+%         set(satFig, 'CData', tmp);
+%         
+%     elseif bface(i) == 3
+%         tmp = zeros(nFaces,1);
+%         tmp(5) = 1;
+%         tmp(11) = 1;
+%         set(satFig, 'CData', tmp);
+%         
+%     elseif bface(i) == 4
+%         tmp = zeros(nFaces,1);
+%         tmp(2) = 1;
+%         tmp(8) = 1;
+%         set(satFig, 'CData', tmp);
+%         
+%     elseif bface(i) == 5
+%         tmp = zeros(nFaces,1);
+%         tmp(4) = 1;
+%         tmp(10) = 1;
+%         set(satFig, 'CData', tmp);
+%         
+%     else
+%         tmp = zeros(nFaces,1);
+%         tmp(3) = 1;
+%         tmp(9) = 1;
+%         set(satFig, 'CData', tmp);
+%         
+%     end
+% 
+%     set(posi,'xdata',r(i,1),'ydata',r(i,2),'zdata',r(i,3));
     
     drawnow
     frame = getframe(gcf);
