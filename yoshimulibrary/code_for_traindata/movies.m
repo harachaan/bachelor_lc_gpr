@@ -100,78 +100,78 @@ addpath('../WOBJ_toolbox_Version2b/');
 % 
 % toc
 X_test = readmatrix('./train_data/X_boxOneWing001.csv');
-X_reg = readmatrix('./train_data/X_boxOneWing002.csv');
+X_reg = readmatrix('./train_data/attiRegTimeHIstory.csv');
 q_test = X_test(:,1:4); q_reg = X_reg(:,1:4);
 
-%% Show movie (inertial frame)
-% movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies');
-% str = horzcat(movie_path,'.mp4');
-curdir = pwd;
-savedir = fullfile(curdir, '../../../temporary');
-str = strcat(savedir, '/boxOneWing_test_movie.mp4');
-vid = VideoWriter(str,'MPEG-4');
-open(vid);
-
-sat = readSC('boxWing.obj',2);
-sat.judge = zeros(length(sat.faces),1);
-
-figure(1)
-axis equal
-grid on
-xlabel('x'), ylabel('y'), zlabel('z')
-xlim([-3 3]), ylim([-3 3]), zlim([-3 3])
-nFaces = length(sat.faces);
-satFig = patch('Faces',sat.faces,'Vertices',sat.vertices,'FaceVertexCData',zeros(nFaces,1),'FaceColor','flat');
-alpha(0.2);
-hold on
-view([34 13])
-% qui = quiver3(0,0,0,1,0,0,0,'color','r');
-
-for i = 1:10:length(X_test)
-    qTmp = repmat(qInv(4, q_test(i,:)),size(sat.vertices,1),1);
-    newVertices = qRotation(4, sat.vertices, qTmp);
-    set(satFig, 'Vertices', newVertices);
-%     set(qui,'udata',v(i,1)*2,'vdata',v(i,2)*2,'wdata',v(i,3)*2);
-%    
-%     if bface(i) == 1
-%         tmp = zeros(nFaces,1);
-%         tmp(6) = 1;
-%         tmp(12) = 1;
-%         set(satFig, 'CData', tmp);
-%     elseif bface(i) == 2
-%         tmp = zeros(nFaces,1);
-%         tmp(1) = 1;
-%         tmp(7) = 1;
-%         set(satFig, 'CData', tmp);
-%     elseif bface(i) == 3
-%         tmp = zeros(nFaces,1);
-%         tmp(5) = 1;
-%         tmp(11) = 1;
-%         set(satFig, 'CData', tmp);
-%     elseif bface(i) == 4
-%         tmp = zeros(nFaces,1);
-%         tmp(2) = 1;
-%         tmp(8) = 1;
-%         set(satFig, 'CData', tmp);
-%     elseif bface(i) == 5
-%         tmp = zeros(nFaces,1);
-%         tmp(4) = 1;
-%         tmp(10) = 1;
-%         set(satFig, 'CData', tmp);
-%     else
-%         tmp = zeros(nFaces,1);
-%         tmp(3) = 1;
-%         tmp(9) = 1;CData
-%         set(satFig, 'CData', tmp);
-%     end
-
-    drawnow
-    frame = getframe(gcf);
- 	writeVideo(vid,frame);
-end
-
- close(vid);
-
+% %% Show movie (inertial frame)
+% % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies');
+% % str = horzcat(movie_path,'.mp4');
+% curdir = pwd;
+% savedir = fullfile(curdir, '../../../temporary');
+% str = strcat(savedir, '/boxOneWing_test_movie.mp4');
+% vid = VideoWriter(str,'MPEG-4');
+% open(vid);
+% 
+% sat = readSC('boxWing.obj',2);
+% sat.judge = zeros(length(sat.faces),1);
+% 
+% figure(1)
+% axis equal
+% grid on
+% xlabel('x'), ylabel('y'), zlabel('z')
+% xlim([-3 3]), ylim([-3 3]), zlim([-3 3])
+% nFaces = length(sat.faces);
+% satFig = patch('Faces',sat.faces,'Vertices',sat.vertices,'FaceVertexCData',zeros(nFaces,1),'FaceColor','flat');
+% alpha(0.2);
+% hold on
+% view([34 13])
+% % qui = quiver3(0,0,0,1,0,0,0,'color','r');
+% 
+% for i = 1:10:length(X_test)
+%     qTmp = repmat(qInv(4, q_test(i,:)),size(sat.vertices,1),1);
+%     newVertices = qRotation(4, sat.vertices, qTmp);
+%     set(satFig, 'Vertices', newVertices);
+% %     set(qui,'udata',v(i,1)*2,'vdata',v(i,2)*2,'wdata',v(i,3)*2);
+% %    
+% %     if bface(i) == 1
+% %         tmp = zeros(nFaces,1);
+% %         tmp(6) = 1;
+% %         tmp(12) = 1;
+% %         set(satFig, 'CData', tmp);
+% %     elseif bface(i) == 2
+% %         tmp = zeros(nFaces,1);
+% %         tmp(1) = 1;
+% %         tmp(7) = 1;
+% %         set(satFig, 'CData', tmp);
+% %     elseif bface(i) == 3
+% %         tmp = zeros(nFaces,1);
+% %         tmp(5) = 1;
+% %         tmp(11) = 1;
+% %         set(satFig, 'CData', tmp);
+% %     elseif bface(i) == 4
+% %         tmp = zeros(nFaces,1);
+% %         tmp(2) = 1;
+% %         tmp(8) = 1;
+% %         set(satFig, 'CData', tmp);
+% %     elseif bface(i) == 5
+% %         tmp = zeros(nFaces,1);
+% %         tmp(4) = 1;
+% %         tmp(10) = 1;
+% %         set(satFig, 'CData', tmp);
+% %     else
+% %         tmp = zeros(nFaces,1);
+% %         tmp(3) = 1;
+% %         tmp(9) = 1;CData
+% %         set(satFig, 'CData', tmp);
+% %     end
+% 
+%     drawnow
+%     frame = getframe(gcf);
+%  	writeVideo(vid,frame);
+% end
+% 
+%  close(vid);
+% 
  %% Show movie
 % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies/2windows');
 % str = horzcat(movie_path,'.mp4');

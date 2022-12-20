@@ -14,37 +14,8 @@ eta = log(0.1);
 params = [tau sigma eta];
 
 
-% -------------------------------------------------------------------------
-% 学習データ読み込み
-% (constructed from yoshimulibrary...)
-% X = readmatrix('train_data_using_yoshimulibrary/X_flatPlate002.csv');
-% t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-% filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', 2), '.csv');
-% df = readmatrix(filename);
-% X = [X; df]; 
-% filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', 2), '.csv');
-% df = readmatrix(filename);
-% t_mApp = [t_mApp; df];
-
-% for i = 3:1:5
-%     % flat plate の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     X = [X; df]; % この場合の事前割り当てのやり方わかんない
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-%     % box wing の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     X = [X; df]; 
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-% end
-
 % 学習データ読み込み----------------------------------------------------------
-Ntraindata = 5;
+Ntraindata = 1;
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
     % flat plate の学習データ
@@ -138,6 +109,13 @@ for i = 1:1:(Ntest-1)
 %     mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
 end
 
+% csvファイルに書き出し ------------------------------------------------------
+savedir = strcat(curdir, '/../../temporary/X_gpr/');
+savename = strcat(savedir, 'attiRegTimeHIstory.csv');
+writematrix(attiReg, savename);
+% savedir = strcat(curdir, '/results/');
+% savename = strcat(savedir, 'attiRegTimeHIstory.csv');
+% writematrix(attiReg, savename);
 
 %% plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
@@ -239,6 +217,8 @@ saveas(gcf, savename);
 figure(f10);
 % plot(t_test, xtrain(1:Ntest,3), 'k.'); % 学習データ
 % hold on;
+% plot(t_test, xtrain(1+Ntest:2*Ntest,3), 'k.'); % 学習データ
+% hold on;
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
@@ -282,6 +262,8 @@ saveas(gcf, savename);
 
 figure(f14);
 % plot(t_test, ytrain(1:Ntest,7), 'k.'); % 学習データ
+% hold on;
+% plot(t_test, ytrain((Ntest + 1):(Ntest+Ntest),7), 'k.'); % 学習データ
 % hold on;
 plot(t_test, ytest(:,7), 'r.'); 
 hold on;
