@@ -3,6 +3,8 @@ clc
 clear
 close all
 
+curdir = pwd;
+pathgpr = strcat(curdir, '/../../gpr');
 % add path for functions
 addpath('../yoshimuLibrary-main/attitude');
 addpath('../yoshimuLibrary-main/conversion');
@@ -18,6 +20,7 @@ addpath('../yoshimuLibrary-main/utility/');
 addpath('../yoshimuLibrary-main/vectorMatrix/');
 addpath('../WOBJ_toolbox_Version2b/');
 
+addpath(strcat(pathgpr, '/hara_functions'));
 
 %% parameters
 % global MOI sat mass const n lam K mu
@@ -100,7 +103,8 @@ addpath('../WOBJ_toolbox_Version2b/');
 % 
 % toc
 X_test = readmatrix('./train_data/X_boxOneWing001.csv');
-X_reg = readmatrix('./train_data/attiRegTimeHIstory.csv');
+X_reg = readmatrix('./train_data/attiRegTimeHIstory.csv'); % zyx Euler angle
+X_reg = [zyx2q_h(X_reg(:,1), X_reg(:,2), X_reg(:,3)), X_reg(:,4:6)];
 q_test = X_test(:,1:4); q_reg = X_reg(:,1:4);
 
 % %% Show movie (inertial frame)
@@ -175,7 +179,6 @@ q_test = X_test(:,1:4); q_reg = X_reg(:,1:4);
  %% Show movie
 % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies/2windows');
 % str = horzcat(movie_path,'.mp4');
-curdir = pwd;
 savedir = strcat(curdir, '/../../../temporary/');
 str = strcat(savedir, 'boxOneWing_reg_movie.mp4');
 vid = VideoWriter(str,'MPEG-4');
