@@ -99,24 +99,26 @@ two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 tEnd = toc; % gpr７回にかかる時間
 
 %% 時系列順の姿勢履歴にorganize -----------------------------------------------
-mAppReg = yy_mu(:,Ly);
+% attiIni = xx(1,:); mAppIni = ytest(1,Ly);
+% attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
+% for i = 1:1:(Ntest-1)
+%     % angle and anglar velocity
+%     attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
+%     % lightcurves
 
-attiIni = xx(1,:); mAppIni = ytest(1,Ly);
-attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
-for i = 1:1:(Ntest-1)
-    % angle and anglar velocity
-    attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
-end
-
-% % quaternionで計算してみた．
-% yy_mu = [zyx2q_h(yy_mu(:,1), yy_mu(:,2), yy_mu(:,3)), yy_mu(:,4:7)]; % euler angleの差分をquaternion error に変換
-% attiIni = [zyx2q_h(xx(1,1), xx(1,2), xx(1,3)), xx(1,4:6)];
-% attiReg = zeros(Ntest, size(attiIni,2)); attiReg(1,:) = attiIni;
-% for i = 1:1:Ntest-1
-%     attiReg(i+1,1:4) = q_pro(attiReg(i,1:4)', yy_mu(i,1:4)')'; % quaternion 転置に注意
-%     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7); % anglar velocity 
 % end
-% attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+
+mAppReg = yy_mu(:,Ly)
+% quaternionで計算していく．
+yy_mu = [zyx2q_h(yy_mu(:,1), yy_mu(:,2), yy_mu(:,3)), yy_mu(:,4:7)]; % euler angleの差分をquaternion error に変換
+attiIni = [zyx2q_h(xx(1,1), xx(1,2), xx(1,3)), xx(1,4:6)];
+attiReg = zeros(Ntest, size(attiIni,2)); attiReg(1,:) = attiIni;
+for i = 1:1:Ntest-1
+    attiReg(i+1,1:4) = q_pro(attiReg(i,1:4)', yy_mu(i,1:4)')'; % quaternion 転置に注意
+    attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7); % anglar velocity 
+end
+attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+
 
 % csvファイルに書き出し ------------------------------------------------------
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
