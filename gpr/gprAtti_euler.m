@@ -98,7 +98,7 @@ end
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 tEnd = toc; % gpr７回にかかる時間
 
-%% 時系列順の姿勢履歴にorganize -----------------------------------------------
+% 時系列順の姿勢履歴にorganize -----------------------------------------------
 mAppReg = yy_mu(:,Ly);
 
 attiIni = xx(1,:); mAppIni = ytest(1,Ly);
