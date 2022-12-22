@@ -109,7 +109,7 @@ for i = 1:1:(Ntest-1)
 end
 % 差分計算までeulerでやって，最後にquaternion変換を挟むことで2piの制限を考慮させる作戦
 attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
-attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,4:6)];
 
 % % quaternionで差分計算して最後にeulerに戻す．
 % yy_mu = [zyx2q_h(yy_mu(:,1), yy_mu(:,2), yy_mu(:,3)), yy_mu(:,4:7)]; % euler angleの差分をquaternion error に変換

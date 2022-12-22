@@ -105,7 +105,7 @@ addpath(strcat(pathgpr, '/hara_functions'));
 X_test = readmatrix('./train_data/X_boxOneWing001.csv');
 X_reg = readmatrix('./train_data/attiRegTimeHIstory.csv'); % zyx Euler angle
 X_reg = [zyx2q_h(X_reg(:,1), X_reg(:,2), X_reg(:,3)), X_reg(:,4:6)];
-q_test = X_test(:,1:4); q_reg = X_reg(:,1:4);
+q_reg = X_reg(:,1:4); q_test = X_test(1:size(q_reg,1),1:4);
 
 % %% Show movie (inertial frame)
 % % movie_path = fullfile('/Users/aihayashibara/Documents/MATLAB/movies');
@@ -229,7 +229,7 @@ view([35 -15])
 % posi = plot3(r(i,1),r(i,2),r(i,3),'Marker','o','MarkerSize',8,'MarkerFaceColor','r');
 %posi = plot3(r(i,1),r(i,2),r(i,3),'Marker',satFig2);
 
-for i = 1:10:length(X_test)
+for i = 1:10:length(q_test)
     qTmp = repmat(qInv(4, q_test(i,:)),size(sat.vertices,1),1);
     newVertices = qRotation(4, sat.vertices, qTmp);
     set(satFig, 'Vertices', newVertices);
