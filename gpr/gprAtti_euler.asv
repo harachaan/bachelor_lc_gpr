@@ -2,46 +2,46 @@
 clc
 clear
 close all
-dir = pwd;
+
+curdir = pwd;
 % addpath(strcat(dir, ''))
 addpath('hara_functions/');
 
 % kernel parameters
 tau = log(1);
-sigma = log(1);
+sigma = log(0.3);
 eta = log(0.1);
 params = [tau sigma eta];
 
 
-% -------------------------------------------------------------------------
-% 学習データ読み込み
-% (constructed from yoshimulibrary...)
-Dp = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate002.csv');
-t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate002.csv');
-% for i = 3:1:5
-%     % flat plate の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/Dp_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     Dp = [Dp; df]; % この場合の事前割り当てのやり方わかんない
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-%     % box wing の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/Dp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     Dp = [Dp; df]; 
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-% end
+% 学習データ読み込み----------------------------------------------------------
+Ntraindata = 1;
+X = []; t_mApp = [];
+for i = 1:1:Ntraindata
+    % flat plate の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    X = [X; df]; % この場合の事前割り当てのやり方わかんない
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+    % box wing の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    X = [X; df]; 
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+end
+
 % テストデータ読み込み
-Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_boxOneWing001.csv'); 
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-% Dp_test = readmatrix('train_data_using_yoshimulibrary/Dp_flatPlate001.csv'); 
+% X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
-xtrain = [q2zyx_h(Dp(:,1:4)) Dp(:,5:7)]; % 学習データの入力 (Euler angleに変換)
-xtest = [q2zyx_h(Dp_test(:,1:4)) Dp_test(:,5:7)]; % テストデータの入力 (Euler angleに変換)
+xtrain = [q2zyx_h(X(:,1:4)) X(:,5:7)]; % 学習データの入力 (Euler angleに変換)
+xtest = [q2zyx_h(X_test(:,1:4)) X_test(:,5:7)]; % テストデータの入力 (Euler angleに変換)
 
 % 学習データ，テストデータの出力（姿勢，ライトカーブ）
 Lx = length(xtrain(1,:)); Ly = Lx + 1; % 出力の次元はライトカーブで1増える
@@ -57,28 +57,26 @@ for i = 1:1:Ntest
 %     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
     ytest(i,7) = t_mApp_test(i,2);
 end
-% 学習データとテストデータの出力は作れたので，各データセットの入力と出力のサイズを統一する
+% 学習データとテストデータの出力は作れたので，各データセットの入力と出力のサイズを統一する（出力の方が1小さいので）
 xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
-
-t_mApp_test = t_mApp_test(1:Ntest,:);
-t_test = t_mApp_test(1:Ntest, 1);
 
 % infの行を消し去りたい
 Dp = [xtrain ytrain]; Dp_test = [xtest ytest]; % データセットごとinfの行を消すために一回入力と出力を結合する
 Dp(any(isinf(Dp)'),:) = []; Dp_test(any(isinf(Dp_test)'),:) = [];% やっぱりinfのある行は取り除いた
 xtrain = Dp(:,1:6); ytrain = Dp(:,7:13); xtest = Dp_test(:,1:6); ytest = Dp_test(:,7:13); 
 
-% NtrainとNtestが変化したので再代入
-Ntrain = length(xtrain(:,1)); Ntest = length(xtest(:,1));
-% 学習データとテストデータの平均を0にする
+Ntrain = length(xtrain(:,1)); Ntest = length(xtest(:,1));% NtrainとNtestが変化したので再代入
+t_mApp_test = t_mApp_test(1:Ntest,:); t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
+
+% 学習データとテストデータの出力の平均を0にする
 for i = 1:1:Ly
     ytrain(:,i) = ytrain(:,i) - mean(ytrain(:,i));
     ytest(:,i) = ytest(:,i) - mean(ytest(:,i));
 end
 
 % 確め計算ゾーン ------------------------------------------------------------
-gaussian_kernel(xtrain(2,:), xtrain(3,:), params);
-kv(xtrain(2,:), xtrain, params);
+% gaussian_kernel(xtrain(2,:), xtrain(3,:), params);
+% kv(xtrain(2,:), xtrain, params);
 % kernel_matrix()
 
 % -------------------------------------------------------------------------
@@ -86,33 +84,57 @@ kv(xtrain(2,:), xtrain, params);
 % カーネル行列のハイパーパラメータ推定
 % params = optimize1(params, xtrain, ytrain);
 
+tic
 % 回帰の計算
+% Ly = Ly;
 xx = xtest;
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
 % a = gpr(xx, xtrain, ytrain(:,8), params);
-for i = 1:1:length(ytrain(1,:))
+for i = 1:1:Ly
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
 end
 
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
+tEnd = toc; % gpr７回にかかる時間
 
-% 時系列順の姿勢履歴にorganize -----------------------------------------------
-attiIni = xx(1,:); mAppIni = t_mApp_test(1,2);
-attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
+%% 時系列順の姿勢履歴にorganize -----------------------------------------------
 mAppReg = yy_mu(:,Ly);
+
+attiIni = xx(1,:); mAppIni = ytest(1,Ly);
+attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
 for i = 1:1:(Ntest-1)
     % angle and anglar velocity
     attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
-    % Light Curves
-%     mAppReg(i+1,1) = mAppReg(i,1) + yy_mu(i,8);
 end
+% 差分計算までeulerでやって，最後にquaternion変換を挟むことで2piの制限を考慮させる作戦
+attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
+attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,4:6)];
 
+% % quaternionで差分計算して最後にeulerに戻す．
+% yy_mu = [zyx2q_h(yy_mu(:,1), yy_mu(:,2), yy_mu(:,3)), yy_mu(:,4:7)]; % euler angleの差分をquaternion error に変換
+% attiIni = [zyx2q_h(xx(1,1), xx(1,2), xx(1,3)), xx(1,4:6)];
+% attiReg = zeros(Ntest, size(attiIni,2)); attiReg(1,:) = attiIni;
+% for i = 1:1:Ntest-1
+%     attiReg(i+1,1:4) = q_pro(attiReg(i,1:4)', yy_mu(i,1:4)')'; % quaternion 転置に注意
+%     attiReg(i+1,5:7) = attiReg(i,5:7) + yy_mu(i,5:7); % anglar velocity 
+% end
+% attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+
+
+% csvファイルに書き出し ------------------------------------------------------
+savedir = strcat(curdir, '/../../temporary/X_gpr/');
+savename = strcat(savedir, 'attiRegTimeHIstory.csv');
+writematrix(attiReg, savename);
+% savedir = strcat(curdir, '/results/');
+% savename = strcat(savedir, 'attiRegTimeHIstory.csv');
+% writematrix(attiReg, savename);
 
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
 f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
 % f15 = figure;
+savedir = strcat(curdir, '/../../temporary/X_gpr/');
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
@@ -121,7 +143,9 @@ hold on;
 plot(xx(:,1), ytest(:,1), 'r.'); % 真値？
 hold on;
 plot(xx(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
-title("phi");
+filename = "deltaPhi"; savename = strcat(savedir, filename, ".png");
+title(filename);
+saveas(gcf, savename);
 
 figure(f2);
 plot(xtrain(:,2), ytrain(:,2), 'k.'); % 学習データ
@@ -129,7 +153,9 @@ hold on;
 plot(xx(:,2), ytest(:,2), 'r.'); % 真値？
 hold on;
 plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
-title("theta");
+filename = "deltaTheta"; savename = strcat(savedir, filename, ".png");
+title(filename);
+saveas(gcf, savename);
 
 figure(f3);
 plot(xtrain(:,3), ytrain(:,3), 'k.'); % 学習データ
@@ -137,7 +163,9 @@ hold on;
 plot(xx(:,3), ytest(:,3), 'r.'); % 真値？
 hold on;
 plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
-title("psi");
+filename = "deltaPsi"; savename = strcat(savedir, filename, ".png");
+title(filename);
+saveas(gcf, savename);
 
 figure(f4);
 plot(xtrain(:,4), ytrain(:,4), 'k.'); % 学習データ
@@ -145,7 +173,9 @@ hold on;
 plot(xx(:,4), ytest(:,4), 'r.'); % 真値？
 hold on;
 plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
-title("w1");
+filename = "deltaW1"; savename = strcat(savedir, filename, ".png");
+title(filename);
+saveas(gcf, savename);
 
 figure(f5);
 plot(xtrain(:,5), ytrain(:,5), 'k.'); % 学習データ
@@ -153,7 +183,9 @@ hold on;
 plot(xx(:,5), ytest(:,5), 'r.'); % 真値？
 hold on;
 plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
-title("w2");
+filename = "deltaW2"; savename = strcat(savedir, filename, ".png");
+title(filename);
+saveas(gcf, savename);
 
 figure(f6);
 plot(xtrain(:,6), ytrain(:,6), 'k.'); % 学習データ
@@ -161,7 +193,9 @@ hold on;
 plot(xx(:,6), ytest(:,6), 'r.'); % 真値？
 hold on;
 plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
-title("w3");
+filename = "deltaW3"; savename = strcat(savedir, filename, ".png");
+title(filename);
+saveas(gcf, savename);
 
 % figure(f7);
 % plot(xtrain(:,7), ytrain(:,7), 'k.'); % 学習データ
@@ -178,7 +212,7 @@ plot(t_test, xtest(:,1), 'r.');
 hold on;
 plot(t_test, attiReg(:,1), 'b.');
 hold on;
-filename = "phiTimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "phiTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -189,18 +223,20 @@ plot(t_test, xtest(:,2), 'r.');
 hold on;
 plot(t_test, attiReg(:,2), 'b.');
 hold on;
-filename = "thetaTimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "thetaTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
 figure(f10);
 % plot(t_test, xtrain(1:Ntest,3), 'k.'); % 学習データ
 % hold on;
+% plot(t_test, xtrain(1+Ntest:2*Ntest,3), 'k.'); % 学習データ
+% hold on;
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
 hold on;
-filename = "psiTimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "psiTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -211,7 +247,7 @@ plot(t_test, xtest(:,4), 'r.');
 hold on;
 plot(t_test, attiReg(:,4), 'b.');
 hold on;
-filename = "w1TimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "w1TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -222,7 +258,7 @@ plot(t_test, xtest(:,5), 'r.');
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
 hold on;
-filename = "w2TimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "w2TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
@@ -233,18 +269,20 @@ plot(t_test, xtest(:,6), 'r.');
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
 hold on;
-filename = "w3TimeHistory"; savename = strcat("figures/", filename, ".png");
+filename = "w3TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
 figure(f14);
-% plot(t_test, t_mApp(1:Ntest,2), 'k.'); % 学習データ
+% plot(t_test, ytrain(1:Ntest,7), 'k.'); % 学習データ
 % hold on;
-plot(t_test, t_mApp_test(:,2), 'r.'); 
+% plot(t_test, ytrain((Ntest + 1):(Ntest+Ntest),7), 'k.'); % 学習データ
+% hold on;
+plot(t_test, ytest(:,7), 'r.'); 
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
 hold on;
-filename = "lightcurves"; savename = strcat("figures/", filename, ".png");
+filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
