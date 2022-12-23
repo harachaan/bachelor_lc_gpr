@@ -15,7 +15,7 @@ params = [tau sigma eta];
 
 
 % 学習データ読み込み----------------------------------------------------------
-Ntraindata = 1;
+Ntraindata = 5;
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
     % flat plate の学習データ
@@ -98,18 +98,21 @@ end
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 tEnd = toc; % gpr７回にかかる時間
 
-%% 時系列順の姿勢履歴にorganize -----------------------------------------------
+% 時系列順の姿勢履歴にorganize -----------------------------------------------
 mAppReg = yy_mu(:,Ly);
 
+% eluler角で計算
 attiIni = xx(1,:); mAppIni = ytest(1,Ly);
 attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
 for i = 1:1:(Ntest-1)
     % angle and anglar velocity
     attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
 end
+
 % 差分計算までeulerでやって，最後にquaternion変換を挟むことで2piの制限を考慮させる作戦
 attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
 attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+
 
 % % quaternionで差分計算して最後にeulerに戻す．
 % yy_mu = [zyx2q_h(yy_mu(:,1), yy_mu(:,2), yy_mu(:,3)), yy_mu(:,4:7)]; % euler angleの差分をquaternion error に変換
