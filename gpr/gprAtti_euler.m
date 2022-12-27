@@ -5,7 +5,7 @@ close all
 
 curdir = pwd;
 % addpath(strcat(dir, ''))
-addpath('hara_functions/');
+addpath('../hara_functions/');
 
 % kernel parameters
 tau = log(1);
