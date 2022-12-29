@@ -2,9 +2,11 @@
 clc
 clear
 close all
+% -------------------------------------------------------------------------
 
 curdir = pwd;
 % addpath(strcat(dir, ''))
+
 addpath('../hara_functions/');
 
 % kernel parameters
@@ -14,7 +16,7 @@ eta = log(0.1);
 params = [tau sigma eta];
 
 
-% 学習データ読み込み----------------------------------------------------------
+% 学習データ読み込み---------------------------------------------------------
 Ntraindata = 28;
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
@@ -96,6 +98,7 @@ yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
 for i = 1:1:Ly
     regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
+    i
 end
 
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
