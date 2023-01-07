@@ -17,7 +17,7 @@ params = [tau sigma eta];
 
 
 % 学習データ読み込み---------------------------------------------------------
-Ntraindata = 26;
+Ntraindata = 40;
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
     % flat plate の学習データ
@@ -39,8 +39,8 @@ end
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing022.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing022.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing032.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing032.csv');
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
