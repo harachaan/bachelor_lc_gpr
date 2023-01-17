@@ -39,8 +39,8 @@ end
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing020.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing020.csv');
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
@@ -326,7 +326,7 @@ end
 % 第2引数xtrainは学習データDp(:, 1:7)のこと？
 function kv = kv(x, xtrain, params)
     kv = zeros(size(xtrain,1), 1);
-    for i = 1:1:size(xtrain,1)
+    for i = 1:1:length(xtrain)
         kv(i,1) = gaussian_kernel(x, xtrain(i,:), params, false);
     end
 end
@@ -353,7 +353,7 @@ function y = gpr(xx, xtrain, ytrain, params)
     K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
     Kinv = inv(K);
 %     N = length(xx) + length(xtrain); % xxは学習データ以外の姿勢? 学習データと完全に被らなければ足すだけでいい，のか？
-    N = size(xx,1);
+    N = (xx);
 %     L = length(xtrain(1,:));
     mu = zeros(N, 1); var = zeros(N, 1);
     for i = 1:1:N
@@ -368,7 +368,7 @@ end
 % train dataのoutputの平均を0と仮定せずに考慮に入れたgpr
 function y = gpr2(xx, xtrain, ytrain, params)
     K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
-    N = size(xx,1);
+    N = length(xx);
     Kinv2 = inv(K + params(1,3)^2 * eye(N)); % alphaのための逆行列
     m = zeros(N, 1); var = zeros(N, 1);
     for i = 1:1:N
