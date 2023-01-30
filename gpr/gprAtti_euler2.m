@@ -8,8 +8,9 @@ close all
 
 curdir = pwd;
 % addpath(strcat(dir, ''))
-
 addpath('../hara_functions/');
+
+% digitsOld = digits(8); % そんなに計算時間変わんなかったからメモリ削減もそんなにできなさそう．
 
 % kernel parameters
 tau = log(1);
@@ -18,6 +19,7 @@ eta = log(0.1);
 params = [tau sigma eta];
 
 
+tStart1 = tic;
 % 学習データ読み込み---------------------------------------------------------
 Ntraindata = 17758;
 X = []; t_mApp = [];
@@ -91,7 +93,7 @@ end
 % カーネル行列のハイパーパラメータ推定
 % params = optimize1(params, xtrain, ytrain);
 
-tic
+tStart2 = tic;
 % 回帰の計算
 % Ly = Ly;
 xx = xtest;
@@ -104,7 +106,7 @@ for i = 1:1:Ly
 end
 
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
-tEnd = toc; % gpr７回にかかる時間
+tEnd2 = toc(tStart2); % gpr７回にかかる時間
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
 mAppReg = yy_mu(:,Ly);
@@ -297,7 +299,7 @@ filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
-
+tEnd1 = toc(tStart1)
 % -------------------------------------------------------------------------
 
 
