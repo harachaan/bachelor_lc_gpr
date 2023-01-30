@@ -20,7 +20,7 @@ eta = log(0.1);
 params = [tau sigma eta];
 
 
-tStart1 = tic;
+tStart_all = tic;
 % 学習データ読み込み---------------------------------------------------------
 Ntraindata = 26;
 
@@ -89,23 +89,28 @@ end
 % カーネル行列のハイパーパラメータ推定
 % params = optimize1(params, xtrain, ytrain);
 
-tStart2 = tic;
+tStart_gpr = tic;
 % 逐次的に回帰の計算
 xx0 = xtest(1,:);
 attiReg = zeros(Ntest,Lx); attiReg(1,:) = xx0;
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
+
+tic;
+K = kernel_matrix(xtrain, params);
+Kinv = inv(K); % 先にカーネル行列とその逆行列を計算しておく
+tinv = toc;
 for i = 1:1:Ly
     % 姿勢の回帰
     if i < Ly
         for j = 1:1:Ntest-1
-            regression = gpr(attiReg(j,:), xtrain, ytrain(:,i), params); % 初期姿勢から次の姿勢への差分を得た．
+            regression = gpr(attiReg(j,:), xtrain, ytrain(:,i), params, Kinv); % 初期姿勢から次の姿勢への差分を得た．
             yy_mu(j,i) = regression(:,1); yy_var(j,i) = regression(:,2); 
             attiReg(j+1,i) = attiReg(j,i) + yy_mu(j,i);
         end
     % ライトカーブの回帰
     elseif i == Ly
         for j = 1:1:Ntest
-            regression = gpr(attiReg(j,:), xtrain, ytrain(:,i), params);
+            regression = gpr(attiReg(j,:), xtrain, ytrain(:,i), params, Kinv);
             yy_mu(j,i) = regression(:,1); yy_var(j,i) = regression(:,2);
         end
     end
@@ -114,7 +119,7 @@ end
 mAppReg = yy_mu(:,Ly);
 
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
-tEnd2 = toc(tStart2); % gprにかかる時間
+tEnd_gpr = toc(tStart_gpr); % gprにかかる時間
 
 % euler角でgprは行なったのでquaternionに変換して2piの制限を考慮
 attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
@@ -290,7 +295,7 @@ title(filename);
 xlabel('time [s]'); ylabel('magnitude');
 saveas(gcf, savename);
 
-tEnd1 = toc(tStart1);
+tEnd_all = toc(tStart_all);
 % -------------------------------------------------------------------------
 
 
@@ -302,7 +307,7 @@ tEnd1 = toc(tStart1);
 %     figure(f_num); 
 % end
 
-% ガウスカーネル(7次元の入力だけど，出力は1次元？)
+% ガウスカーネル(7次元の入力，1次元の出力)
 function kernel = gaussian_kernel(x, y, params, train, diag)
     arguments
         x; y; params; train = true; diag = false;
@@ -322,7 +327,7 @@ end
 function kv = kv(x, xtrain, params)
     kv = zeros(size(xtrain,1), 1);
     for i = 1:1:size(xtrain,1)
-        kv(i,1) = gaussian_kernel(x, xtrain(i,:), params, false);
+        kv(i,1) = gaussian_kernel(x, xtrain(i,:), params, false, false);
     end
 end
 
@@ -335,7 +340,7 @@ function K = kernel_matrix(xx, params)
             if i == j
                 K(i,j) = gaussian_kernel(xx(i,:), xx(j,:), params, true, true);
             else
-                K(i,j) = gaussian_kernel(xx(i,:), xx(j,:), params); % あらかじめtrain=true, diag=false
+                K(i,j) = gaussian_kernel(xx(i,:), xx(j,:), params, true, false);
             end
         end
     end
@@ -344,12 +349,8 @@ end
 % ガウス過程回帰を行う
 % xxに何が入るかわからん → 学習データ以外の姿勢？
 % xtrainは7次元の入力，ytrainは各姿勢データ1次元の出力(差分)
-function y = gpr(xx, xtrain, ytrain, params)
-    K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
-    Kinv = inv(K);
-%     N = length(xx) + length(xtrain); % xxは学習データ以外の姿勢? 学習データと完全に被らなければ足すだけでいい，のか？
+function y = gpr(xx, xtrain, ytrain, params, Kinv)
     N = size(xx,1);
-%     L = length(xtrain(1,:));
     mu = zeros(N, 1); var = zeros(N, 1);
     for i = 1:1:N
         s = gaussian_kernel(xx(i,:), xx(i,:), params, false, true); % カーネル行列k_**
