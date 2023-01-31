@@ -149,9 +149,9 @@ figure(f1);
 % hold on;
 plot(xtrain(:,1), ytrain(:,1), 'k.'); % 学習データ
 hold on;
-plot(xx(:,1), ytest(:,1), 'r.'); % 真値？
+plot(xtest(:,1), ytest(:,1), 'r.'); % 真値？
 hold on;
-plot(xx(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
+plot(attiReg(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
 filename = "deltaPhi"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
@@ -159,9 +159,9 @@ saveas(gcf, savename);
 figure(f2);
 plot(xtrain(:,2), ytrain(:,2), 'k.'); % 学習データ
 hold on;
-plot(xx(:,2), ytest(:,2), 'r.'); % 真値？
+plot(xtest(:,2), ytest(:,2), 'r.'); % 真値？
 hold on;
-plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
+plot(attiReg(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
 filename = "deltaTheta"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
@@ -169,9 +169,9 @@ saveas(gcf, savename);
 figure(f3);
 plot(xtrain(:,3), ytrain(:,3), 'k.'); % 学習データ
 hold on;
-plot(xx(:,3), ytest(:,3), 'r.'); % 真値？
+plot(xtest(:,3), ytest(:,3), 'r.'); % 真値？
 hold on;
-plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
+plot(attiReg(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
 filename = "deltaPsi"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
@@ -179,9 +179,9 @@ saveas(gcf, savename);
 figure(f4);
 plot(xtrain(:,4), ytrain(:,4), 'k.'); % 学習データ
 hold on;
-plot(xx(:,4), ytest(:,4), 'r.'); % 真値？
+plot(xtest(:,4), ytest(:,4), 'r.'); % 真値？
 hold on;
-plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
+plot(attiReg(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
 filename = "deltaW1"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
@@ -189,9 +189,9 @@ saveas(gcf, savename);
 figure(f5);
 plot(xtrain(:,5), ytrain(:,5), 'k.'); % 学習データ
 hold on;
-plot(xx(:,5), ytest(:,5), 'r.'); % 真値？
+plot(xtest(:,5), ytest(:,5), 'r.'); % 真値？
 hold on;
-plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
+plot(attiReg(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
 filename = "deltaW2"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
@@ -199,101 +199,83 @@ saveas(gcf, savename);
 figure(f6);
 plot(xtrain(:,6), ytrain(:,6), 'k.'); % 学習データ
 hold on;
-plot(xx(:,6), ytest(:,6), 'r.'); % 真値？
+plot(xtest(:,6), ytest(:,6), 'r.'); % 真値？
 hold on;
-plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
+plot(attiReg(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
 filename = "deltaW3"; savename = strcat(savedir, filename, ".png");
 title(filename);
 saveas(gcf, savename);
 
-% figure(f7);
-% plot(xtrain(:,7), ytrain(:,7), 'k.'); % 学習データ
-% hold on;
-% plot(xx(:,7), ytest(:,7), 'r.'); % 真値？
-% hold on;
-% plot(xx(:,7), yy_mu(:,7), 'b.'); % 回帰結果？
-% title("w3");
-
 figure(f8);
-% plot(t_test, xtrain(1:Ntest,1), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,1), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,1), 'b.');
 hold on;
 filename = "phiTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
+xlabel('time [s]'); ylabel('\phi [rad]'); 
 saveas(gcf, savename);
 
 figure(f9);
-% plot(t_test, xtrain(1:Ntest,2), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,2), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,2), 'b.');
 hold on;
 filename = "thetaTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
+xlabel('time [s]'); ylabel('\theta [rad]'); 
 saveas(gcf, savename);
 
 figure(f10);
-% plot(t_test, xtrain(1:Ntest,3), 'k.'); % 学習データ
-% hold on;
-% plot(t_test, xtrain(1+Ntest:2*Ntest,3), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
 hold on;
 filename = "psiTimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
+xlabel('time [s]'); ylabel('\psi [rad]'); 
 saveas(gcf, savename);
 
 figure(f11);
-% plot(t_test, xtrain(1:Ntest,4), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,4), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,4), 'b.');
 hold on;
-filename = "w1TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega1TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
+xlabel('time [s]'); ylabel('\omega_1 [rad/s]'); 
 saveas(gcf, savename);
 
 figure(f12);
-% plot(t_test, xtrain(1:Ntest,5), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,5), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
 hold on;
-filename = "w2TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega2TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
+xlabel('time [s]'); ylabel('\omega_2 [rad/s]');
 saveas(gcf, savename);
 
 figure(f13);
-% plot(t_test, xtrain(1:Ntest,6), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
 hold on;
-filename = "w3TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega3TimeHistory"; savename = strcat(savedir, filename, ".png");
 title(filename);
+xlabel('time [s]'); ylabel('\omega_3 [rad/s]');
 saveas(gcf, savename);
 
 figure(f14);
-% plot(t_test, ytrain(1:Ntest,7), 'k.'); % 学習データ
-% hold on;
-% plot(t_test, ytrain((Ntest + 1):(Ntest+Ntest),7), 'k.'); % 学習データ
-% hold on;
 plot(t_test, ytest(:,7), 'r.'); 
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
 hold on;
 filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
 title(filename);
+xlabel('time [s]'); ylabel('magnitude');
 saveas(gcf, savename);
+
 
 
 % -------------------------------------------------------------------------
