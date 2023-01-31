@@ -1,4 +1,7 @@
-% 姿勢(Euler angle)，軌道を状態変数(変数6個)に持つGPR
+% 1. 姿勢(Euler angle)，軌道を状態変数(変数6個)に持つGPR
+% 2. 状態空間を網羅する方針にしてテストデータの作り方が色々変わったmainAttiOrbit2.mlxに対応したgpr
+% 3. テストデータの入力をまとめて全部gprするんじゃなくて逐次的にやるようにしたgpr(ついでに軸ラベル，単位も追加した．)
+
 clc
 clear
 close all
@@ -6,8 +9,9 @@ close all
 
 curdir = pwd;
 % addpath(strcat(dir, ''))
-
 addpath('../hara_functions/');
+
+% digitsOld = digits(8); % そんなに計算時間変わんなかったからメモリ削減もそんなにできなさそう．
 
 % kernel parameters
 tau = log(1);
@@ -16,34 +20,26 @@ eta = log(0.1);
 params = [tau sigma eta];
 
 
+tStart_all = tic;
 % 学習データ読み込み---------------------------------------------------------
 Ntraindata = 26;
-X = []; t_mApp = [];
-for i = 1:1:Ntraindata
-    % flat plate の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
+
+% X = []; t_mApp = [];
+% for i = 1:1:Ntraindata
+%     % box wing の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
 %     df = readmatrix(filename);
-%     X = [X; df]; % この場合の事前割り当てのやり方わかんない
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+%     X = [X; df]; 
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
 %     df = readmatrix(filename);
 %     t_mApp = [t_mApp; df];
-    % box wing の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    X = [X; df]; 
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-    df = readmatrix(filename);
-    t_mApp = [t_mApp; df];
-end
+% end
 
 % テストデータ読み込み
-% X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
-% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing029.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing029.csv');
-% X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
-% t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
-
+X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
+t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 
 xtrain = [q2zyx_h(X(:,1:4)) X(:,5:7)]; % 学習データの入力 (Euler angleに変換)
 xtest = [q2zyx_h(X_test(:,1:4)) X_test(:,5:7)]; % テストデータの入力 (Euler angleに変換)
@@ -54,12 +50,10 @@ Ntrain = size(xtrain,1) - 1; Ntest = size(xtest,1) - 1; %今回扱う学習デ�
 ytrain = zeros(Ntrain, Ly); ytest = zeros(Ntest, Ly);
 for i = 1:1:(Ntrain)
     ytrain(i,1:6) = xtrain(i+1,1:6) - xtrain(i,1:6);
-%     ytrain(i,8) = t_mApp(i+1,2) - t_mApp(i,2);
     ytrain(i,7) = t_mApp(i,2); % ライトカーブは差分じゃなくそのままを学習するようにした
 end
 for i = 1:1:Ntest
     ytest(i,1:6) = xtest(i+1,1:6) - xtest(i,1:6);
-%     ytest(i,8) = t_mApp_test(i+1,2) - t_mApp_test(i,2);
     ytest(i,7) = t_mApp_test(i,2);
 end
 % 学習データとテストデータの出力は作れたので，各データセットの入力と出力のサイズを統一する（出力の方が1小さいので）
@@ -68,10 +62,10 @@ xtrain = xtrain(1:Ntrain,:); xtest = xtest(1:Ntest,:);
 % infの行を消し去りたい
 Dp = [xtrain ytrain]; Dp_test = [xtest ytest]; % データセットごとinfの行を消すために一回入力と出力を結合する
 Dp(any(isinf(Dp)'),:) = []; Dp_test(any(isinf(Dp_test)'),:) = [];% やっぱりinfのある行は取り除いた
-xtrain = Dp(:,1:6); ytrain = Dp(:,7:13); xtest = Dp_test(:,1:6); ytest = Dp_test(:,7:13); 
+xtrain = Dp(:,1:6); ytrain = Dp(:,7:13); xtest = Dp_test(:,1:6); ytest = Dp_test(:,7:13);
 
 Ntrain = size(xtrain,1); Ntest = size(xtest,1);% NtrainとNtestが変化したので再代入
-t_mApp_test = t_mApp_test(1:Ntest,:); t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
+t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
 
 % 学習データとテストデータの出力の平均を0にする
 for i = 1:1:Ly
@@ -89,35 +83,68 @@ end
 % カーネル行列のハイパーパラメータ推定
 % params = optimize1(params, xtrain, ytrain);
 
-tic
-% 回帰の計算
-% Ly = Ly;
-xx = xtest;
+tStart_gpr = tic;
+% 逐次的に回帰の計算
+xx0 = xtest(1,:);
+attiReg = zeros(Ntest, Lx); attiReg(1,:) = xx0;
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
-% a = gpr(xx, xtrain, ytrain(:,8), params);
-for i = 1:1:Ly
-    regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
-    yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
-    i
+
+tic;
+K = kernel_matrix(xtrain, params);
+Kinv = inv(K); % 先にカーネル行列とその逆行列を計算しておく
+tinv = toc;
+% for i = 1:1:Ly
+%     % 姿勢の回帰
+%     if i < Ly
+%         for j = 1:1:Ntest-1
+%             regression = gpr(attiReg(j,:), xtrain, ytrain(:,i), params, Kinv); % 初期姿勢から次の姿勢への差分を得た．
+%             yy_mu(j,i) = regression(1,1); yy_var(j,i) = regression(1,2); 
+%             attiReg(j+1,i) = attiReg(j,i) + yy_mu(j,i);
+%         end
+%     % ライトカーブの回帰
+%     elseif i == Ly
+%         for j = 1:1:Ntest
+%             regression = gpr(attiReg(j,:), xtrain, ytrain(:,i), params, Kinv);
+%             yy_mu(j,i) = regression(1,1); yy_var(j,i) = regression(1,2);
+%         end
+%     end
+%     i
+% end
+% 姿勢の回帰
+for i = 1:1:Ntest-1
+    for j = 1:1:Lx
+        [yy_mu(i,j), yy_var(i,j)] = gpr(attiReg(i,:), xtrain, ytrain(:,j), params, Kinv);
+    end
+    attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:Lx); % 姿勢の差分を足す
+end
+% ライトカーブの回帰
+for i = 1:1:Ntest
 end
 
-two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
-tEnd = toc; % gpr７回にかかる時間
 
-% 時系列順の姿勢履歴にorganize -----------------------------------------------
 mAppReg = yy_mu(:,Ly);
 
-% eluler角で計算
-attiIni = xx(1,:); mAppIni = ytest(1,Ly);
-attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
-for i = 1:1:(Ntest-1)
-    % angle and anglar velocity
-    attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
-end
+two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
+tEnd_gpr = toc(tStart_gpr); % gprにかかる時間
 
-% 差分計算までeulerでやって，最後にquaternion変換を挟むことで2piの制限を考慮させる作戦
+% euler角でgprは行なったのでquaternionに変換して2piの制限を考慮
 attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
 attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+
+% 時系列順の姿勢履歴にorganize -----------------------------------------------
+% mAppReg = yy_mu(:,Ly);
+% 
+% % eluler角で計算
+% attiIni = xx(1,:); mAppIni = ytest(1,Ly);
+% attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
+% for i = 1:1:(Ntest-1)
+%     % angle and anglar velocity
+%     attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
+% end
+% 
+% % 差分計算までeulerでやって，最後にquaternion変換を挟むことで2piの制限を考慮させる作戦
+% attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
+% attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 
 
 % % quaternionで差分計算して最後にeulerに戻す．
@@ -133,11 +160,9 @@ attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 
 % csvファイルに書き出し ------------------------------------------------------
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
-savename = strcat(savedir, 'attiRegTimeHIstory.csv');
-writematrix(attiReg, savename);
-% savedir = strcat(curdir, '/results/');
-% savename = strcat(savedir, 'attiRegTimeHIstory.csv');
-% writematrix(attiReg, savename);
+savename = strcat(savedir, 'attiRegTimeHIstory.csv'); writematrix(attiReg, savename);
+savename = strcat(savedir, 'mAppReg.csv'); writematrix(mAppReg, savename);
+% 論文を書くのに必要な計算条件とかも出力したい．．
 
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
@@ -275,9 +300,8 @@ filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
 title(filename);
 xlabel('time [s]'); ylabel('magnitude');
 saveas(gcf, savename);
-r得
 
-
+tEnd_all = toc(tStart_all);
 % -------------------------------------------------------------------------
 
 
@@ -289,7 +313,7 @@ r得
 %     figure(f_num); 
 % end
 
-% ガウスカーネル(7次元の入力だけど，出力は1次元？)
+% ガウスカーネル(7次元の入力，1次元の出力)
 function kernel = gaussian_kernel(x, y, params, train, diag)
     arguments
         x; y; params; train = true; diag = false;
@@ -309,7 +333,7 @@ end
 function kv = kv(x, xtrain, params)
     kv = zeros(size(xtrain,1), 1);
     for i = 1:1:size(xtrain,1)
-        kv(i,1) = gaussian_kernel(x, xtrain(i,:), params, false);
+        kv(i,1) = gaussian_kernel(x, xtrain(i,:), params, false, false);
     end
 end
 
@@ -322,7 +346,7 @@ function K = kernel_matrix(xx, params)
             if i == j
                 K(i,j) = gaussian_kernel(xx(i,:), xx(j,:), params, true, true);
             else
-                K(i,j) = gaussian_kernel(xx(i,:), xx(j,:), params); % あらかじめtrain=true, diag=false
+                K(i,j) = gaussian_kernel(xx(i,:), xx(j,:), params, true, false);
             end
         end
     end
@@ -331,12 +355,8 @@ end
 % ガウス過程回帰を行う
 % xxに何が入るかわからん → 学習データ以外の姿勢？
 % xtrainは7次元の入力，ytrainは各姿勢データ1次元の出力(差分)
-function y = gpr(xx, xtrain, ytrain, params)
-    K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
-    Kinv = inv(K);
-%     N = length(xx) + length(xtrain); % xxは学習データ以外の姿勢? 学習データと完全に被らなければ足すだけでいい，のか？
+function [mu, var] = gpr(xx, xtrain, ytrain, params, Kinv)
     N = size(xx,1);
-%     L = length(xtrain(1,:));
     mu = zeros(N, 1); var = zeros(N, 1);
     for i = 1:1:N
         s = gaussian_kernel(xx(i,:), xx(i,:), params, false, true); % カーネル行列k_**
@@ -344,7 +364,7 @@ function y = gpr(xx, xtrain, ytrain, params)
         mu(i,1) = k' * Kinv * ytrain;
         var(i,1) = s - k' * Kinv * k;
     end
-    y = [mu var]; % 入力された姿勢の次の差分の確率分布が回帰された？
+%     y = [mu var]; % 入力された姿勢の次の差分の確率分布が回帰された？
 end
 
 % train dataのoutputの平均を0と仮定せずに考慮に入れたgpr
