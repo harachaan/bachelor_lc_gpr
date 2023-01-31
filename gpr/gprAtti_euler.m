@@ -275,7 +275,6 @@ filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
 title(filename);
 xlabel('time [s]'); ylabel('magnitude');
 saveas(gcf, savename);
-r得
 
 
 % -------------------------------------------------------------------------
