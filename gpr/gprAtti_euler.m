@@ -35,6 +35,8 @@ for i = 1:1:Ntraindata
     df = readmatrix(filename);
     t_mApp = [t_mApp; df];
 end
+% X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
+% t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
@@ -74,9 +76,12 @@ Ntrain = size(xtrain,1); Ntest = size(xtest,1);% NtrainとNtestが変化した�
 t_mApp_test = t_mApp_test(1:Ntest,:); t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
 
 % 学習データとテストデータの出力の平均を0にする
+mean_ytrain = zeros(1,Ly); mean_ytest = zeros(1,Ly);
 for i = 1:1:Ly
-    ytrain(:,i) = ytrain(:,i) - mean(ytrain(:,i));
-    ytest(:,i) = ytest(:,i) - mean(ytest(:,i));
+    mean_ytrain(1,i) = mean(ytrain(:,i));
+    mean_ytest(1,i) = mean(ytest(:,i));
+    ytrain(:,i) = ytrain(:,i) - mean_ytrain(1,i);
+    ytest(:,i) = ytest(:,i) - mean_ytest(1,i);
 end
 
 % 確め計算ゾーン ------------------------------------------------------------
@@ -104,20 +109,32 @@ end
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 tEnd = toc; % gpr７回にかかる時間
 
+% 平均0にしたのをもどす（とりあえず単純に）
+mAppReg = yy_mu(:,Ly) + mean_ytrain(1,Ly);
+ytest(:,Ly) = ytest(:,Ly) + mean_ytest(1,Ly);
+for i = 1:1:Lx
+    yy_mu(:,i) = yy_mu(:,i) + mean_ytrain(1,i);
+    ytest(:,i) = ytest(:,i) + mean_ytest(1,i);
+end
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
-mAppReg = yy_mu(:,Ly);
 
 % eluler角で計算
-attiIni = xx(1,:); mAppIni = ytest(1,Ly);
-attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
-for i = 1:1:(Ntest-1)
-    % angle and anglar velocity
-    attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
-end
+% attiIni = xx(1,:); mAppIni = ytest(1,Ly);
+% attiReg = zeros(Ntest, Lx); attiReg(1,:) = attiIni; 
+% for i = 1:1:(Ntest-1)
+%     % angle and anglar velocity
+%     attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:6);
+% end
+attiReg = zeros(Ntest, Lx); attiReg(1,:) = xx(1,:);
+attiReg(2:end,:) = xtest(1:Ntest-1,:) + yy_mu(1:Ntest-1,1:6); % 瞬間瞬間の差分を計算してその妥当性を見たいので，xtestにattiRegを足す．
 
 % 差分計算までeulerでやって，最後にquaternion変換を挟むことで2piの制限を考慮させる作戦
 attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
 attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+
+% 瞬間瞬間の回帰結果とテストデータの誤差
+attiError = attiReg - xtest; mean_attiError = mean(attiError, 1);
+mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
 
 
 % % quaternionで差分計算して最後にeulerに戻す．
@@ -141,141 +158,196 @@ writematrix(attiReg, savename);
 
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
-f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
+f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; 
 % f15 = figure;
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
 figure(f1);
 % patch([xx(:,1)', fliplr(xx(:,1)')], [two_sigma1', fliplr(two_sigma2')], 'c');
 % hold on;
-plot(xtrain(:,1), ytrain(:,1), 'k.'); % 学習データ
-hold on;
+% plot(xtrain(:,1), ytrain(:,1), 'k.'); % 学習データ
+% hold on;
 plot(xtest(:,1), ytest(:,1), 'r.'); % 真値？
 hold on;
 plot(attiReg(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
-filename = "deltaPhi"; savename = strcat(savedir, filename, ".png");
+filename = "deltaPhi"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f2);
-plot(xtrain(:,2), ytrain(:,2), 'k.'); % 学習データ
-hold on;
+% plot(xtrain(:,2), ytrain(:,2), 'k.'); % 学習データ
+% hold on;
 plot(xtest(:,2), ytest(:,2), 'r.'); % 真値？
 hold on;
 plot(attiReg(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
-filename = "deltaTheta"; savename = strcat(savedir, filename, ".png");
+filename = "deltaTheta"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f3);
-plot(xtrain(:,3), ytrain(:,3), 'k.'); % 学習データ
-hold on;
+% plot(xtrain(:,3), ytrain(:,3), 'k.'); % 学習データ
+% hold on;
 plot(xtest(:,3), ytest(:,3), 'r.'); % 真値？
 hold on;
 plot(attiReg(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
-filename = "deltaPsi"; savename = strcat(savedir, filename, ".png");
+filename = "deltaPsi"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f4);
-plot(xtrain(:,4), ytrain(:,4), 'k.'); % 学習データ
-hold on;
+% plot(xtrain(:,4), ytrain(:,4), 'k.'); % 学習データ
+% hold on;
 plot(xtest(:,4), ytest(:,4), 'r.'); % 真値？
 hold on;
 plot(attiReg(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
-filename = "deltaW1"; savename = strcat(savedir, filename, ".png");
+filename = "deltaW1"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f5);
-plot(xtrain(:,5), ytrain(:,5), 'k.'); % 学習データ
-hold on;
+% plot(xtrain(:,5), ytrain(:,5), 'k.'); % 学習データ
+% hold on;
 plot(xtest(:,5), ytest(:,5), 'r.'); % 真値？
 hold on;
 plot(attiReg(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
-filename = "deltaW2"; savename = strcat(savedir, filename, ".png");
+filename = "deltaW2"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f6);
-plot(xtrain(:,6), ytrain(:,6), 'k.'); % 学習データ
-hold on;
+% plot(xtrain(:,6), ytrain(:,6), 'k.'); % 学習データ
+% hold on;
 plot(xtest(:,6), ytest(:,6), 'r.'); % 真値？
 hold on;
 plot(attiReg(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
-filename = "deltaW3"; savename = strcat(savedir, filename, ".png");
+filename = "deltaW3"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
-figure(f8);
+figure(f7);
 plot(t_test, xtest(:,1), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,1), 'b.');
 hold on;
-filename = "phiTimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "phiTimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('\phi [rad]'); 
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
-figure(f9);
+figure(f8);
 plot(t_test, xtest(:,2), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,2), 'b.');
 hold on;
-filename = "thetaTimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "thetaTimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('\theta [rad]'); 
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
-figure(f10);
+figure(f9);
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
 hold on;
-filename = "psiTimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "psiTimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('\psi [rad]'); 
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
-figure(f11);
+figure(f10);
 plot(t_test, xtest(:,4), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,4), 'b.');
 hold on;
-filename = "omega1TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega1TimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('\omega_1 [rad/s]'); 
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
-figure(f12);
+figure(f11);
 plot(t_test, xtest(:,5), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
 hold on;
-filename = "omega2TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega2TimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('\omega_2 [rad/s]');
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
-figure(f13);
+figure(f12);
 plot(t_test, xtest(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
 hold on;
-filename = "omega3TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega3TimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('\omega_3 [rad/s]');
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
-figure(f14);
+figure(f13);
 plot(t_test, ytest(:,7), 'r.'); 
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
 hold on;
-filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
+filename = "lightcurves"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('magnitude');
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
+f14 = figure; figure(f14);
+plot(t_test, attiError(:,1), 'b.');
+hold on;
+filename = "phiError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\phi [rad]'); 
+exportgraphics(gcf, savename);
+
+f15 = figure; figure(f15);
+plot(t_test, attiError(:,2), 'b.');
+hold on;
+filename = "thetaError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\theta [rad]'); 
+exportgraphics(gcf, savename);
+
+f16 = figure; figure(f16);
+plot(t_test, attiError(:,3), 'b.');
+hold on;
+filename = "psiError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\psi [rad]'); 
+exportgraphics(gcf, savename);
+
+f17 = figure; figure(f17);
+plot(t_test, attiError(:,4), 'b.');
+hold on;
+filename = "omega1Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_1 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f18 = figure; figure(f18);
+plot(t_test, attiError(:,5), 'b.');
+hold on;
+filename = "omega2Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_2 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f19 = figure; figure(f19);
+plot(t_test, attiError(:,6), 'b.');
+hold on;
+filename = "omega3Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_3 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f20 = figure; figure(f20);
+plot(t_test, mAppError(:,1), 'b.');
+hold on;
+filename = "lightcurvesError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('magnitude'); 
+exportgraphics(gcf, savename);
 
 % -------------------------------------------------------------------------
 
