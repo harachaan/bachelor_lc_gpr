@@ -17,26 +17,26 @@ params = [tau sigma eta];
 
 
 % 学習データ読み込み---------------------------------------------------------
-Ntraindata = 1;
+Ntraindata = 26;
 X = []; t_mApp = [];
-% for i = 1:1:Ntraindata
-%     % flat plate の学習データ
-% %     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
-% %     df = readmatrix(filename);
-% %     X = [X; df]; % この場合の事前割り当てのやり方わかんない
-% %     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-% %     df = readmatrix(filename);
-% %     t_mApp = [t_mApp; df];
-%     % box wing の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+for i = 1:1:Ntraindata
+    % flat plate の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
 %     df = readmatrix(filename);
-%     X = [X; df]; 
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+%     X = [X; df]; % この場合の事前割り当てのやり方わかんない
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
 %     df = readmatrix(filename);
 %     t_mApp = [t_mApp; df];
-% end
-X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
-t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
+    % box wing の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    X = [X; df]; 
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+end
+% X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
+% t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
