@@ -24,20 +24,20 @@ tStart_all = tic;
 % 学習データ読み込み---------------------------------------------------------
 Ntraindata = 26;
 
-% X = []; t_mApp = [];
-% for i = 1:1:Ntraindata
-%     % box wing の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     X = [X; df]; 
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
-%     df = readmatrix(filename);
-%     t_mApp = [t_mApp; df];
-% end
+X = []; t_mApp = [];
+for i = 1:1:Ntraindata
+    % box wing の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    X = [X; df]; 
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+end
+% X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
+% t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 
 % テストデータ読み込み
-X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
-t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
 t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 
@@ -65,12 +65,15 @@ Dp(any(isinf(Dp)'),:) = []; Dp_test(any(isinf(Dp_test)'),:) = [];% やっぱりi
 xtrain = Dp(:,1:6); ytrain = Dp(:,7:13); xtest = Dp_test(:,1:6); ytest = Dp_test(:,7:13);
 
 Ntrain = size(xtrain,1); Ntest = size(xtest,1);% NtrainとNtestが変化したので再代入
-t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
+t_mApp_test = t_mApp_test(1:Ntest,:); t_test = t_mApp_test(1:Ntest, 1); % プロットするためにt_testのサイズを調整
 
 % 学習データとテストデータの出力の平均を0にする
+mean_ytrain = zeros(1,Ly); mean_ytest = zeros(1,Ly);
 for i = 1:1:Ly
-    ytrain(:,i) = ytrain(:,i) - mean(ytrain(:,i));
-    ytest(:,i) = ytest(:,i) - mean(ytest(:,i));
+    mean_ytrain(1,i) = mean(ytrain(:,i));
+    mean_ytest(1,i) = mean(ytest(:,i));
+    ytrain(:,i) = ytrain(:,i) - mean_ytrain(1,i);
+    ytest(:,i) = ytest(:,i) - mean_ytest(1,i);
 end
 
 % 確め計算ゾーン ------------------------------------------------------------
@@ -116,21 +119,33 @@ for i = 1:1:Ntest-1
     for j = 1:1:Lx
         [yy_mu(i,j), yy_var(i,j)] = gpr(attiReg(i,:), xtrain, ytrain(:,j), params, Kinv);
     end
+    yy_mu(i,1:Lx) = yy_mu(i,1:Lx) + mean_ytrain(1,1:Lx); % 平均0にしたのを戻す
     attiReg(i+1,:) = attiReg(i,:) + yy_mu(i,1:Lx); % 姿勢の差分を足す
 end
 % ライトカーブの回帰
 for i = 1:1:Ntest
     [yy_mu(i,Ly), yy_var(i,Ly)] = gpr(attiReg(i,:), xtrain, ytrain(:,Ly), params, Kinv);
 end
+yy_mu(:,Ly) = yy_mu(:,Ly) + mean_ytrain(1,Ly); % 平均0にしたのを戻す
 mAppReg = yy_mu(:,Ly);
+
+% テストデータの出力の平均0にしたのを戻す
+for i = 1:1:Ly
+    ytest(:,i) = ytest(:,i) + mean_ytest(1,i);
+end
 
 
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
 tEnd_gpr = toc(tStart_gpr); % gprにかかる時間
 
+
 % euler角でgprは行なったのでquaternionに変換して2piの制限を考慮
 attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
 attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
+
+% 瞬間瞬間の回帰結果とテストデータの誤差
+attiError = attiReg - xtest; mean_attiError = mean(attiError, 1);
+mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
 % mAppReg = yy_mu(:,Ly);
@@ -161,13 +176,16 @@ attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 
 % csvファイルに書き出し ------------------------------------------------------
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
+savename = strcat(curdir, 'test_x_t_mApp.csv'); writematrix([xtest, t_mApp_test], savename);
 savename = strcat(savedir, 'attiRegTimeHIstory.csv'); writematrix(attiReg, savename);
 savename = strcat(savedir, 'mAppReg.csv'); writematrix(mAppReg, savename);
+savename = strcat(savedir, 'errors.csv'); writematrix([attiError, mAppError], savename);
+savename = strcat(savedir, 'meanErrors.csv'); writematrix([mean_attiError, mean_mAppError], savename);
 % 論文を書くのに必要な計算条件とかも出力したい．．
 
 % plot --------------------------------------------------------------------
 f1 = figure; f2 = figure; f3 = figure; f4 = figure; f5 = figure; f6 = figure; f7 = figure;
-f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure; f14 = figure;
+f8 = figure; f9 = figure; f10 = figure; f11 = figure; f12 = figure; f13 = figure;
 % f15 = figure;
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
 figure(f1);
@@ -232,7 +250,7 @@ filename = "deltaW3"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 exportgraphics(gcf, savename);
 
-figure(f8);
+figure(f7);
 plot(t_test, xtest(:,1), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,1), 'b.');
@@ -242,7 +260,7 @@ title(filename);
 xlabel('time [s]'); ylabel('\phi [rad]'); 
 exportgraphics(gcf, savename);
 
-figure(f9);
+figure(f8);
 plot(t_test, xtest(:,2), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,2), 'b.');
@@ -252,7 +270,7 @@ title(filename);
 xlabel('time [s]'); ylabel('\theta [rad]'); 
 exportgraphics(gcf, savename);
 
-figure(f10);
+figure(f9);
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
@@ -262,7 +280,7 @@ title(filename);
 xlabel('time [s]'); ylabel('\psi [rad]'); 
 exportgraphics(gcf, savename);
 
-figure(f11);
+figure(f10);
 plot(t_test, xtest(:,4), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,4), 'b.');
@@ -272,7 +290,7 @@ title(filename);
 xlabel('time [s]'); ylabel('\omega_1 [rad/s]'); 
 exportgraphics(gcf, savename);
 
-figure(f12);
+figure(f11);
 plot(t_test, xtest(:,5), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
@@ -282,7 +300,7 @@ title(filename);
 xlabel('time [s]'); ylabel('\omega_2 [rad/s]');
 exportgraphics(gcf, savename);
 
-figure(f13);
+figure(f12);
 plot(t_test, xtest(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
@@ -292,7 +310,7 @@ title(filename);
 xlabel('time [s]'); ylabel('\omega_3 [rad/s]');
 exportgraphics(gcf, savename);
 
-figure(f14);
+figure(f13);
 plot(t_test, ytest(:,7), 'r.'); 
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
@@ -300,6 +318,62 @@ hold on;
 filename = "lightcurves"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('magnitude');
+exportgraphics(gcf, savename);
+
+f14 = figure; figure(f14);
+plot(t_test, attiError(:,1), 'b.');
+hold on;
+filename = "phiError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\phi [rad]'); 
+exportgraphics(gcf, savename);
+
+f15 = figure; figure(f15);
+plot(t_test, attiError(:,2), 'b.');
+hold on;
+filename = "thetaError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\theta [rad]'); 
+exportgraphics(gcf, savename);
+
+f16 = figure; figure(f16);
+plot(t_test, attiError(:,3), 'b.');
+hold on;
+filename = "psiError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\psi [rad]'); 
+exportgraphics(gcf, savename);
+
+f17 = figure; figure(f17);
+plot(t_test, attiError(:,4), 'b.');
+hold on;
+filename = "omega1Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_1 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f18 = figure; figure(f18);
+plot(t_test, attiError(:,5), 'b.');
+hold on;
+filename = "omega2Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_2 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f19 = figure; figure(f19);
+plot(t_test, attiError(:,6), 'b.');
+hold on;
+filename = "omega3Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_3 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f20 = figure; figure(f20);
+plot(t_test, mAppError(:,1), 'b.');
+hold on;
+filename = "lightcurvesError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('magnitude'); 
 exportgraphics(gcf, savename);
 
 tEnd_all = toc(tStart_all);
