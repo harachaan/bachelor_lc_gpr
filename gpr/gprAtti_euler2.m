@@ -19,7 +19,7 @@ params = [tau sigma eta];
 
 
 % 学習データ読み込み---------------------------------------------------------
-Ntraindata = 1;
+Ntraindata = 4758;
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
     % flat plate の学習データ
