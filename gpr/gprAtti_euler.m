@@ -1,4 +1,6 @@
 % 姿勢(Euler angle)，軌道を状態変数(変数6個)に持つGPR
+% テストデータの入力に対する回帰結果
+% tspan = 0:3:3600
 clc
 clear
 close all
@@ -99,9 +101,12 @@ tic
 % Ly = Ly;
 xx = xtest;
 yy_mu = zeros(Ntest, Ly); yy_var = zeros(Ntest, Ly);
+
+K = kernel_matrix(xtrain, params);
+Kinv = inv(K); % 先にカーネル行列とその逆行列を計算しておく
 % a = gpr(xx, xtrain, ytrain(:,8), params);
 for i = 1:1:Ly
-    regression = gpr(xx, xtrain, ytrain(:,i), params); % length(xx)行2列？
+    regression = gpr(xx, xtrain, ytrain(:,i), params, Kinv); % length(xx)行2列？
     yy_mu(:,i) = regression(:,1); yy_var(:,i) = regression(:,2); 
     i
 end
@@ -405,9 +410,9 @@ end
 % ガウス過程回帰を行う
 % xxに何が入るかわからん → 学習データ以外の姿勢？
 % xtrainは7次元の入力，ytrainは各姿勢データ1次元の出力(差分)
-function y = gpr(xx, xtrain, ytrain, params)
-    K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
-    Kinv = inv(K);
+function y = gpr(xx, xtrain, ytrain, params, Kinv)
+%     K = kernel_matrix(xtrain, params); % 学習データの入力Dp(:, 1:7)のカーネル行列K
+%     Kinv = inv(K);
 %     N = length(xx) + length(xtrain); % xxは学習データ以外の姿勢? 学習データと完全に被らなければ足すだけでいい，のか？
     N = size(xx,1);
 %     L = length(xtrain(1,:));
