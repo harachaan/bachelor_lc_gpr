@@ -17,32 +17,32 @@ params = [tau sigma eta];
 
 
 % 学習データ読み込み---------------------------------------------------------
-Ntraindata = 1;
+Ntraindata = 26;
 X = []; t_mApp = [];
-% for i = 1:1:Ntraindata
-%     % flat plate の学習データ
-% %     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
-% %     df = readmatrix(filename);
-% %     X = [X; df]; % この場合の事前割り当てのやり方わかんない
-% %     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
-% %     df = readmatrix(filename);
-% %     t_mApp = [t_mApp; df];
-%     % box wing の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+for i = 1:1:Ntraindata
+    % flat plate の学習データ
+%     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
 %     df = readmatrix(filename);
-%     X = [X; df]; 
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+%     X = [X; df]; % この場合の事前割り当てのやり方わかんない
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
 %     df = readmatrix(filename);
 %     t_mApp = [t_mApp; df];
-% end
-X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
-t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
+    % box wing の学習データ
+    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    X = [X; df]; 
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    df = readmatrix(filename);
+    t_mApp = [t_mApp; df];
+end
+% X = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
+% t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing029.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing029.csv');
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
@@ -150,8 +150,10 @@ mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
 
 % csvファイルに書き出し ------------------------------------------------------
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
-savename = strcat(savedir, 'attiRegTimeHIstory.csv');
-writematrix(attiReg, savename);
+savename = strcat(curdir, 'test_x_t_mApp.csv'); writematrix([x_test, t_te], savename)
+savename = strcat(savedir, 'attiRegTimeHIstory.csv'); writematrix(attiReg, savename);
+savename = strcat(savedir, 'mAppReg.csv'); writematrix(mAppReg, savename);
+savename = strcat(savedir, 'errors.csv'); writematrix([attiError, mAppError], savename);
 % savedir = strcat(curdir, '/results/');
 % savename = strcat(savedir, 'attiRegTimeHIstory.csv');
 % writematrix(attiReg, savename);
@@ -323,6 +325,30 @@ hold on;
 filename = "omega1Error"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
 xlabel('time [s]'); ylabel('\omega_1 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f18 = figure; figure(f18);
+plot(t_test, attiError(:,5), 'b.');
+hold on;
+filename = "omega2Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_2 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f19 = figure; figure(f19);
+plot(t_test, attiError(:,6), 'b.');
+hold on;
+filename = "omega3Error"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('\omega_3 [rad/s]'); 
+exportgraphics(gcf, savename);
+
+f20 = figure; figure(f20);
+plot(t_test, mAppError(:,1), 'b.');
+hold on;
+filename = "lightcurvesError"; savename = strcat(savedir, filename, ".pdf");
+title(filename);
+xlabel('time [s]'); ylabel('magnitude'); 
 exportgraphics(gcf, savename);
 
 % -------------------------------------------------------------------------
