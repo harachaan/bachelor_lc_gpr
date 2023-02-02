@@ -139,6 +139,7 @@ attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
 savename = strcat(savedir, 'attiRegTimeHIstory.csv');
 writematrix(attiReg, savename);
+savename = strcat(savedir, 'mAppReg.csv'); writematrix(mAppReg, savename);
 % savedir = strcat(curdir, '/results/');
 % savename = strcat(savedir, 'attiRegTimeHIstory.csv');
 % writematrix(attiReg, savename);

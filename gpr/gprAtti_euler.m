@@ -41,8 +41,8 @@ end
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing029.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing029.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
@@ -150,8 +150,11 @@ mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
 
 % csvファイルに書き出し ------------------------------------------------------
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
-savename = strcat(savedir, 'attiRegTimeHIstory.csv');
-writematrix(attiReg, savename);
+savename = strcat(curdir, 'test_x_t_mApp.csv'); writematrix([xtest, t_mApp_test], savename);
+savename = strcat(savedir, 'attiRegTimeHIstory.csv'); writematrix(attiReg, savename);
+savename = strcat(savedir, 'mAppReg.csv'); writematrix(mAppReg, savename);
+savename = strcat(savedir, 'errors.csv'); writematrix([attiError, mAppError], savename);
+savename = strcat(savedir, 'meanErrors.csv'); writematrix([mean_attiError, mean_mAppError], savename);
 % savedir = strcat(curdir, '/results/');
 % savename = strcat(savedir, 'attiRegTimeHIstory.csv');
 % writematrix(attiReg, savename);

@@ -8,8 +8,9 @@ close all
 
 curdir = pwd;
 % addpath(strcat(dir, ''))
-
 addpath('../hara_functions/');
+
+% digitsOld = digits(8); % そんなに計算時間変わんなかったからメモリ削減もそんなにできなさそう．
 
 % kernel parameters
 tau = log(1);
@@ -18,22 +19,23 @@ eta = log(0.1);
 params = [tau sigma eta];
 
 
+tStart1 = tic;
 % 学習データ読み込み---------------------------------------------------------
-Ntraindata = 26;
+Ntraindata = 17758;
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
     % flat plate の学習データ
-%     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%03d', i), '.csv');
+%     filename = strcat('train_data_using_yoshimulibrary/X_flatPlate', sprintf('%05d', i), '.csv');
 %     df = readmatrix(filename);
 %     X = [X; df]; % この場合の事前割り当てのやり方わかんない
-%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%03d', i), '.csv');
+%     filename = strcat('train_data_using_yoshimulibrary/t_mApp_flatPlate', sprintf('%05d', i), '.csv');
 %     df = readmatrix(filename);
 %     t_mApp = [t_mApp; df];
     % box wing の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%05d', i), '.csv');
     df = readmatrix(filename);
     X = [X; df]; 
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%05d', i), '.csv');
     df = readmatrix(filename);
     t_mApp = [t_mApp; df];
 end
@@ -91,7 +93,7 @@ end
 % カーネル行列のハイパーパラメータ推定
 % params = optimize1(params, xtrain, ytrain);
 
-tic
+tStart2 = tic;
 % 回帰の計算
 % Ly = Ly;
 xx = xtest;
@@ -104,7 +106,7 @@ for i = 1:1:Ly
 end
 
 two_sigma1 = yy_mu - 2 * sqrt(yy_var); two_sigma2 = yy_mu + 2 * sqrt(yy_var);
-tEnd = toc; % gpr７回にかかる時間
+tEnd2 = toc(tStart2); % gpr７回にかかる時間
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
 mAppReg = yy_mu(:,Ly);
@@ -137,6 +139,7 @@ attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
 savename = strcat(savedir, 'attiRegTimeHIstory.csv');
 writematrix(attiReg, savename);
+savename = strcat(savedir, 'mAppReg.csv'); writematrix(mAppReg, savename);
 % savedir = strcat(curdir, '/results/');
 % savename = strcat(savedir, 'attiRegTimeHIstory.csv');
 % writematrix(attiReg, savename);
@@ -151,153 +154,135 @@ figure(f1);
 % hold on;
 plot(xtrain(:,1), ytrain(:,1), 'k.'); % 学習データ
 hold on;
-plot(xx(:,1), ytest(:,1), 'r.'); % 真値？
+plot(xtest(:,1), ytest(:,1), 'r.'); % 真値？
 hold on;
-plot(xx(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
-filename = "deltaPhi"; savename = strcat(savedir, filename, ".png");
+plot(attiReg(:,1), yy_mu(:,1), 'b.'); % 回帰結果？
+filename = "deltaPhi"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f2);
 plot(xtrain(:,2), ytrain(:,2), 'k.'); % 学習データ
 hold on;
-plot(xx(:,2), ytest(:,2), 'r.'); % 真値？
+plot(xtest(:,2), ytest(:,2), 'r.'); % 真値？
 hold on;
-plot(xx(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
-filename = "deltaTheta"; savename = strcat(savedir, filename, ".png");
+plot(attiReg(:,2), yy_mu(:,2), 'b.'); % 回帰結果？
+filename = "deltaTheta"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f3);
 plot(xtrain(:,3), ytrain(:,3), 'k.'); % 学習データ
 hold on;
-plot(xx(:,3), ytest(:,3), 'r.'); % 真値？
+plot(xtest(:,3), ytest(:,3), 'r.'); % 真値？
 hold on;
-plot(xx(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
-filename = "deltaPsi"; savename = strcat(savedir, filename, ".png");
+plot(attiReg(:,3), yy_mu(:,3), 'b.'); % 回帰結果？
+filename = "deltaPsi"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f4);
 plot(xtrain(:,4), ytrain(:,4), 'k.'); % 学習データ
 hold on;
-plot(xx(:,4), ytest(:,4), 'r.'); % 真値？
+plot(xtest(:,4), ytest(:,4), 'r.'); % 真値？
 hold on;
-plot(xx(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
-filename = "deltaW1"; savename = strcat(savedir, filename, ".png");
+plot(attiReg(:,4), yy_mu(:,4), 'b.'); % 回帰結果？
+filename = "deltaW1"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f5);
 plot(xtrain(:,5), ytrain(:,5), 'k.'); % 学習データ
 hold on;
-plot(xx(:,5), ytest(:,5), 'r.'); % 真値？
+plot(xtest(:,5), ytest(:,5), 'r.'); % 真値？
 hold on;
-plot(xx(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
-filename = "deltaW2"; savename = strcat(savedir, filename, ".png");
+plot(attiReg(:,5), yy_mu(:,5), 'b.'); % 回帰結果？
+filename = "deltaW2"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+exportgraphics(gcf, savename);
 
 figure(f6);
 plot(xtrain(:,6), ytrain(:,6), 'k.'); % 学習データ
 hold on;
-plot(xx(:,6), ytest(:,6), 'r.'); % 真値？
+plot(xtest(:,6), ytest(:,6), 'r.'); % 真値？
 hold on;
-plot(xx(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
-filename = "deltaW3"; savename = strcat(savedir, filename, ".png");
+plot(attiReg(:,6), yy_mu(:,6), 'b.'); % 回帰結果？
+filename = "deltaW3"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
-
-% figure(f7);
-% plot(xtrain(:,7), ytrain(:,7), 'k.'); % 学習データ
-% hold on;
-% plot(xx(:,7), ytest(:,7), 'r.'); % 真値？
-% hold on;
-% plot(xx(:,7), yy_mu(:,7), 'b.'); % 回帰結果？
-% title("w3");
+exportgraphics(gcf, savename);
 
 figure(f8);
-% plot(t_test, xtrain(1:Ntest,1), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,1), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,1), 'b.');
 hold on;
-filename = "phiTimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "phiTimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+xlabel('time [s]'); ylabel('\phi [rad]'); 
+exportgraphics(gcf, savename);
 
 figure(f9);
-% plot(t_test, xtrain(1:Ntest,2), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,2), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,2), 'b.');
 hold on;
-filename = "thetaTimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "thetaTimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+xlabel('time [s]'); ylabel('\theta [rad]'); 
+exportgraphics(gcf, savename);
 
 figure(f10);
-% plot(t_test, xtrain(1:Ntest,3), 'k.'); % 学習データ
-% hold on;
-% plot(t_test, xtrain(1+Ntest:2*Ntest,3), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,3), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,3), 'b.');
 hold on;
-filename = "psiTimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "psiTimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+xlabel('time [s]'); ylabel('\psi [rad]'); 
+exportgraphics(gcf, savename);
 
 figure(f11);
-% plot(t_test, xtrain(1:Ntest,4), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,4), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,4), 'b.');
 hold on;
-filename = "w1TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega1TimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+xlabel('time [s]'); ylabel('\omega_1 [rad/s]'); 
+exportgraphics(gcf, savename);
 
 figure(f12);
-% plot(t_test, xtrain(1:Ntest,5), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,5), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,5), 'b.');
 hold on;
-filename = "w2TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega2TimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+xlabel('time [s]'); ylabel('\omega_2 [rad/s]');
+exportgraphics(gcf, savename);
 
 figure(f13);
-% plot(t_test, xtrain(1:Ntest,6), 'k.'); % 学習データ
-% hold on;
 plot(t_test, xtest(:,6), 'r.'); 
 hold on;
 plot(t_test, attiReg(:,6), 'b.');
 hold on;
-filename = "w3TimeHistory"; savename = strcat(savedir, filename, ".png");
+filename = "omega3TimeHistory"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+xlabel('time [s]'); ylabel('\omega_3 [rad/s]');
+exportgraphics(gcf, savename);
 
 figure(f14);
-% plot(t_test, ytrain(1:Ntest,7), 'k.'); % 学習データ
-% hold on;
-% plot(t_test, ytrain((Ntest + 1):(Ntest+Ntest),7), 'k.'); % 学習データ
-% hold on;
 plot(t_test, ytest(:,7), 'r.'); 
 hold on;
 plot(t_test, mAppReg(:,1), 'b.');
 hold on;
-filename = "lightcurves"; savename = strcat(savedir, filename, ".png");
+filename = "lightcurves"; savename = strcat(savedir, filename, ".pdf");
 title(filename);
-saveas(gcf, savename);
+xlabel('time [s]'); ylabel('magnitude');
+exportgraphics(gcf, savename);
 
 
+tEnd1 = toc(tStart1)
 % -------------------------------------------------------------------------
 
 
