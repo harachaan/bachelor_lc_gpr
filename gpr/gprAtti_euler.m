@@ -43,8 +43,8 @@ end
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing028.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing028.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing029.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing029.csv');
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
