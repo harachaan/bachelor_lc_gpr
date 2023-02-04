@@ -22,15 +22,15 @@ params = [tau sigma eta];
 
 tStart_all = tic;
 % 学習データ読み込み---------------------------------------------------------
-Ntraindata = 26;
+Ntraindata = 17758;
 
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
     % box wing の学習データ
-    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%03d', i), '.csv');
+    filename = strcat('train_data_using_yoshimulibrary/X_boxWing', sprintf('%05d', i), '.csv');
     df = readmatrix(filename);
     X = [X; df]; 
-    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%03d', i), '.csv');
+    filename = strcat('train_data_using_yoshimulibrary/t_mApp_boxWing', sprintf('%05d', i), '.csv');
     df = readmatrix(filename);
     t_mApp = [t_mApp; df];
 end
