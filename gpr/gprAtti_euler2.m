@@ -19,7 +19,7 @@ params = [tau sigma eta];
 
 
 % 学習データ読み込み---------------------------------------------------------
-Ntraindata = 4758;
+Ntraindata = 17758;
 X = []; t_mApp = [];
 for i = 1:1:Ntraindata
     % flat plate の学習データ
@@ -43,8 +43,8 @@ end
 % テストデータ読み込み
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_boxOneWing001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxOneWing001.csv');
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing029.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing029.csv');
 % X_test = readmatrix('train_data_using_yoshimulibrary/X_flatPlate001.csv'); 
 % t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_flatPlate001.csv');
 
@@ -138,8 +138,8 @@ attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
 attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 
 % 瞬間瞬間の回帰結果とテストデータの誤差
-attiError = attiReg - xtest; mean_attiError = mean(attiError, 1);
-mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
+attiError = abs(attiReg - xtest); mean_attiError = mean(attiError, 1);
+mAppError = abs(mAppReg - ytest(:,Ly)); mean_mAppError = mean(mAppError, 1);
 
 
 % % quaternionで差分計算して最後にeulerに戻す．
