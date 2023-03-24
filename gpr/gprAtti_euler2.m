@@ -138,8 +138,8 @@ attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
 attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 
 % 瞬間瞬間の回帰結果とテストデータの誤差
-attiError = attiReg - xtest; mean_attiError = mean(attiError, 1);
-mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
+attiError = attiReg - xtest; mean_attiError = mean(abs(attiError), 1);
+mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(abs(mAppError), 1);
 
 
 % % quaternionで差分計算して最後にeulerに戻す．

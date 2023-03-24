@@ -38,8 +38,8 @@ end
 % t_mApp = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
 
 % テストデータ読み込み
-X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing002.csv'); 
-t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing002.csv');
+X_test = readmatrix('train_data_using_yoshimulibrary/X_boxWing029.csv'); 
+t_mApp_test = readmatrix('train_data_using_yoshimulibrary/t_mApp_boxWing029.csv');
 
 xtrain = [q2zyx_h(X(:,1:4)) X(:,5:7)]; % 学習データの入力 (Euler angleに変換)
 xtest = [q2zyx_h(X_test(:,1:4)) X_test(:,5:7)]; % テストデータの入力 (Euler angleに変換)
@@ -144,8 +144,8 @@ attiReg = [zyx2q_h(attiReg(:,1), attiReg(:,2), attiReg(:,3)), attiReg(:,4:6)];
 attiReg = [q2zyx_h(attiReg(:,1:4)), attiReg(:,5:7)];
 
 % 瞬間瞬間の回帰結果とテストデータの誤差
-attiError = attiReg - xtest; mean_attiError = mean(attiError, 1);
-mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
+attiError = attiReg - xtest; mean_attiError = mean(abs(attiError), 1);
+mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(abs(mAppError), 1);
 
 % 時系列順の姿勢履歴にorganize -----------------------------------------------
 % mAppReg = yy_mu(:,Ly);
@@ -176,10 +176,10 @@ mAppError = mAppReg - ytest(:,Ly); mean_mAppError = mean(mAppError, 1);
 
 % csvファイルに書き出し ------------------------------------------------------
 savedir = strcat(curdir, '/../../temporary/X_gpr/');
-savename = strcat(curdir, 'test_x_t_mApp.csv'); writematrix([xtest, t_mApp_test], savename);
-savename = strcat(savedir, 'attiRegTimeHIstory.csv'); writematrix(attiReg, savename);
-savename = strcat(savedir, 'mAppReg.csv'); writematrix(mAppReg, savename);
-savename = strcat(savedir, 'errors.csv'); writematrix([attiError, mAppError], savename);
+savename = strcat(curdir, 'test_x_t_mApp.csv'); writematrix([t_test, xtest, t_mApp_test], savename);
+savename = strcat(savedir, 'attiRegTimeHIstory.csv'); writematrix([t_test, attiReg], savename);
+savename = strcat(savedir, 'mAppReg.csv'); writematrix([t_test, mAppReg], savename);
+savename = strcat(savedir, 'errors.csv'); writematrix([t_test, attiError, mAppError], savename);
 savename = strcat(savedir, 'meanErrors.csv'); writematrix([mean_attiError, mean_mAppError], savename);
 % 論文を書くのに必要な計算条件とかも出力したい．．
 
